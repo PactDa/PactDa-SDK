@@ -1,0 +1,223 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# PactDa Server Dev Context (Protocol Gateway) - Enhanced for Global Scale & Impact
+
+## 1. Goal
+Build a robust, secure, and globally scalable backend infrastructure that democratizes access to trust mechanisms worldwide. The server acts as a secure gateway with enterprise-grade security, comprehensive compliance, and social impact measurement capabilities, enabling developers to build applications that can solve real-world problems across different cultures and economic systems.
+
+## 2. Enhanced Tech Stack
+- **Framework:** NestJS on Node.js/TypeScript with microservices architecture
+- **Database:** 
+  - Primary: PostgreSQL with read replicas for ACID compliance
+  - Cache: Redis for session management and real-time features
+  - Analytics: ClickHouse for high-volume event tracking
+  - Search: Elasticsearch for dispute resolution and content search
+- **Message Queue:** Apache Kafka for reliable event processing
+- **Monitoring:** Prometheus + Grafana + Sentry for comprehensive observability
+- **Deployment:** Kubernetes on multi-cloud (AWS/GCP) with auto-scaling
+- **Security:** HashiCorp Vault for secrets, AWS KMS for encryption
+
+## 3. Core Services & Enhanced Endpoints
+
+### Enhanced Auth Service
+- **Purpose:** Secure, compliant developer account management with global accessibility.
+- **DB Models:** 
+  - `Developer` (email, hash, mfa_settings, compliance_status, social_impact_score)
+  - `Subscription` (tier, credit_allowance, billing_cycle, social_discount)
+  - `ApiKey` (key, developer_id, permissions, rate_limits, regions)
+  - `ComplianceRecord` (kyc_level, jurisdiction, verification_status)
+- **Enhanced Endpoints:**
+  - `POST /auth/register`: Multi-step registration with email verification
+  - `POST /auth/login`: MFA-enabled login with device fingerprinting
+  - `POST /auth/mfa/setup`: TOTP/SMS multi-factor authentication setup
+  - `GET /auth/me`: Enhanced profile with compliance status and impact metrics
+  - `POST /auth/kyc/verify`: Progressive KYC verification system
+  - `POST /auth/social-login`: OAuth integration with major providers
+
+### Advanced API Gateway & Credit System
+- **Purpose:** Intelligent request routing, abuse prevention, and fair usage management.
+- **Enhanced Middleware Stack:**
+  1. **Rate Limiting:** Adaptive rate limiting based on user behavior and region
+  2. **Authentication:** JWT validation with refresh token rotation
+  3. **Authorization:** Role-based access control with fine-grained permissions
+  4. **Compliance:** Real-time sanctions screening and jurisdiction validation
+  5. **Fraud Detection:** ML-powered anomaly detection for suspicious patterns
+  6. **Load Balancing:** Intelligent routing based on geographic proximity
+  7. **Circuit Breaker:** Fault tolerance with graceful degradation
+- **Credit System Enhancements:**
+  - Dynamic pricing based on agreement complexity and risk
+  - Social impact discounts for NGOs and community projects
+  - Credit sharing for collaborative development
+  - Automatic credit top-ups with spending limits
+- **New Endpoints:**
+  - `GET /api/v1/credits/usage`: Detailed usage analytics with cost optimization suggestions
+  - `POST /api/v1/credits/transfer`: Credit sharing between developers
+  - `GET /api/v1/credits/forecast`: Predictive usage and cost forecasting
+
+### Enhanced Gas Sponsorship Service
+- **Purpose:** Reliable, secure, and cost-optimized transaction execution.
+- **Advanced Features:**
+  - **Multi-Wallet Management:** Hot/warm/cold wallet architecture
+  - **Gas Optimization:** Dynamic gas price adjustment and batching
+  - **Transaction Monitoring:** Real-time status tracking with retry mechanisms
+  - **Security:** Multi-sig requirements for high-value transactions
+  - **Compliance:** Automatic sanctions screening and reporting
+- **Enhanced Endpoints:**
+  - `POST /v1/transactions/submit`: Enhanced with priority queuing
+  - `GET /v1/transactions/{id}/status`: Real-time status with detailed logs
+  - `POST /v1/transactions/batch`: Batch processing for efficiency
+  - `GET /v1/gas/estimate`: Accurate gas estimation with optimization suggestions
+- **Security Enhancements:**
+  - Hardware Security Module (HSM) integration
+  - Multi-party computation for key management
+  - Automated wallet rotation and monitoring
+  - Emergency pause mechanisms
+
+### Dispute Resolution Service - **NEW**
+- **Purpose:** Fair, transparent, and culturally sensitive dispute resolution.
+- **Features:**
+  - **Automated Mediation:** AI-powered initial dispute analysis
+  - **Human Arbitration:** Network of verified arbitrators globally
+  - **Evidence Management:** Secure, immutable evidence storage
+  - **Multi-language Support:** Dispute handling in 20+ languages
+  - **Cultural Adaptation:** Region-specific dispute resolution practices
+- **Endpoints:**
+  - `POST /v1/disputes/create`: Structured dispute creation with evidence upload
+  - `GET /v1/disputes/{id}`: Comprehensive dispute status and timeline
+  - `POST /v1/disputes/{id}/evidence`: Secure evidence submission
+  - `POST /v1/disputes/{id}/resolve`: Arbitrator resolution submission
+  - `GET /v1/arbitrators/available`: Find qualified arbitrators by region/expertise
+
+### Compliance & Risk Management Service - **NEW**
+- **Purpose:** Ensure global regulatory compliance and risk mitigation.
+- **Features:**
+  - **KYC/AML Integration:** Automated identity verification
+  - **Sanctions Screening:** Real-time OFAC/EU sanctions checking
+  - **Transaction Monitoring:** Suspicious activity detection and reporting
+  - **Regulatory Reporting:** Automated compliance reporting by jurisdiction
+  - **Risk Scoring:** ML-based risk assessment for agreements and users
+- **Endpoints:**
+  - `POST /v1/compliance/kyc/verify`: Identity verification with document upload
+  - `GET /v1/compliance/sanctions/check`: Real-time sanctions screening
+  - `POST /v1/compliance/sar/report`: Suspicious activity reporting
+  - `GET /v1/compliance/requirements/{jurisdiction}`: Jurisdiction-specific requirements
+
+### Analytics & Social Impact Service - **NEW**
+- **Purpose:** Measure and amplify positive social impact globally.
+- **Features:**
+  - **Impact Tracking:** Monitor agreements solving real-world problems
+  - **Developer Insights:** Usage patterns and optimization recommendations
+  - **Social Metrics:** Trust score improvements and community benefits
+  - **Financial Inclusion:** Track unbanked population onboarding
+  - **Sustainability:** Carbon footprint tracking and offset programs
+- **Endpoints:**
+  - `GET /v1/analytics/impact/summary`: Global social impact dashboard
+  - `GET /v1/analytics/developer/{id}/insights`: Personalized developer analytics
+  - `POST /v1/analytics/impact/report`: Developer-submitted impact reports
+  - `GET /v1/analytics/trust/metrics`: Community trust score analytics
+
+### Enhanced Indexer & Real-time Service
+- **Purpose:** Provide reliable, real-time updates with offline support.
+- **Enhanced Features:**
+  - **Event Sourcing:** Complete audit trail of all system events
+  - **Offline Sync:** Queue events for offline users in developing regions
+  - **Push Notifications:** Mobile and web push notifications
+  - **Webhook Delivery:** Reliable webhook delivery with retry logic
+  - **Real-time Analytics:** Live dashboards for developers and users
+- **Endpoints:**
+  - `GET /v1/events/stream`: Server-sent events for real-time updates
+  - `POST /v1/webhooks/register`: Webhook registration with verification
+  - `GET /v1/notifications/preferences`: User notification preferences
+  - `POST /v1/notifications/send`: Targeted notification delivery
+
+## 4. Enhanced Security Architecture
+
+### **Multi-layered Security**
+- **API Security:** OAuth 2.0 + OpenID Connect, API key management, request signing
+- **Network Security:** WAF, DDoS protection, IP whitelisting, VPN access
+- **Data Security:** End-to-end encryption, field-level encryption, secure key rotation
+- **Access Control:** Zero-trust architecture, least privilege principle, audit logging
+- **Incident Response:** Automated threat detection, incident response playbooks
+
+### **Privacy & Compliance**
+- **Data Protection:** GDPR, CCPA, LGPD compliance with data residency
+- **Audit Logging:** Immutable audit trails with tamper detection
+- **Right to Erasure:** Automated data deletion with blockchain considerations
+- **Consent Management:** Granular consent tracking and management
+
+## 5. Global Infrastructure & Scalability
+
+### **Multi-Region Deployment**
+- **Geographic Distribution:** US, EU, Asia-Pacific, Latin America data centers
+- **Data Residency:** Comply with local data residency requirements
+- **Latency Optimization:** Edge computing and CDN integration
+- **Disaster Recovery:** Multi-region failover with RTO < 15 minutes
+
+### **Auto-scaling & Performance**
+- **Horizontal Scaling:** Kubernetes-based auto-scaling
+- **Database Scaling:** Read replicas, connection pooling, query optimization
+- **Caching Strategy:** Multi-layer caching with intelligent invalidation
+- **Performance Monitoring:** Real-time performance metrics and alerting
+
+## 6. Social Impact & Sustainability
+
+### **Impact Measurement**
+- **SDG Alignment:** Track contribution to UN Sustainable Development Goals
+- **Community Benefits:** Measure trust improvements in underserved communities
+- **Financial Inclusion:** Monitor unbanked population integration
+- **Economic Empowerment:** Track freelancer and small business success rates
+
+### **Sustainability Initiatives**
+- **Carbon Neutrality:** Offset all server emissions through verified programs
+- **Green Computing:** Optimize for energy efficiency and renewable energy use
+- **Social Pricing:** Subsidized access for NGOs and community organizations
+- **Education Programs:** Free developer training in underserved regions
+
+## 7. Implementation Roadmap
+
+### **Phase 1: Foundation (Months 1-3)**
+- Core API gateway with enhanced security
+- Basic compliance and KYC integration
+- Multi-region deployment setup
+- Comprehensive monitoring and alerting
+
+### **Phase 2: Advanced Features (Months 4-6)**
+- Dispute resolution system
+- Advanced analytics and social impact tracking
+- Mobile optimization and offline support
+- Partnership integrations (payment providers, KYC services)
+
+### **Phase 3: Global Scale (Months 7-12)**
+- Full multi-language support
+- Advanced AI/ML features for fraud detection
+- Social impact marketplace
+- Enterprise features and white-label solutions
+
+## 8. Success Metrics & KPIs
+
+### **Technical Metrics**
+- **Availability:** 99.99% uptime SLA
+- **Performance:** < 100ms API response time globally
+- **Security:** Zero successful security breaches
+- **Scalability:** Handle 1M+ transactions per day
+
+### **Business Metrics**
+- **Developer Adoption:** 10,000+ active developers by year 1
+- **Global Reach:** Available in 50+ countries
+- **Social Impact:** 1M+ people positively impacted
+- **Financial Inclusion:** 100,000+ unbanked users onboarded
+
+### **Sustainability Metrics**
+- **Carbon Neutral:** 100% offset of operational emissions
+- **Social Pricing:** 20% of usage from subsidized access
+- **Education:** 1,000+ developers trained in underserved regions
+- **Community Trust:** 95%+ agreement completion rate without disputes
+
+
+    - A background process subscribes to on-chain events from the PactDa smart contracts.
+    - When a relevant event is detected, it pushes a message to a managed WebSocket service (e.g., Ably, Pusher).
+    - SDK clients connect to this WebSocket service to receive updates.
+

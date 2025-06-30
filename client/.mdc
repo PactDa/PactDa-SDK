@@ -1,0 +1,305 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# PactDa Client Dev Context (Developer Portal) - Enhanced for Global Impact & Accessibility
+
+## 1. Goal
+Build a world-class, inclusive, and globally accessible web application that serves as the primary gateway for developers worldwide to join the PactDa ecosystem. The portal must successfully democratize access to trust infrastructure, provide comprehensive developer tools, and measure social impact while serving developers across different cultures, languages, and economic backgrounds.
+
+## 2. Enhanced Tech Stack
+- **Framework:** Next.js 14+ (React) with App Router and Server Components
+- **Styling:** Tailwind CSS with custom design system for global accessibility
+- **UI Components:** Radix UI + Shadcn/UI with full accessibility compliance
+- **Internationalization:** next-i18next with RTL support for 20+ languages
+- **Analytics:** Plausible (privacy-first) + Custom social impact tracking
+- **Deployment:** Vercel with global edge network and multi-region support
+- **Accessibility:** WCAG 2.1 AA compliance with screen reader optimization
+- **Performance:** Core Web Vitals optimization with < 2s load times globally
+
+## 3. Enhanced Pages & Comprehensive Functionality
+
+### Enhanced Landing Page (`/`)
+- **Purpose:** Inspire developers to build trust-based applications that can change the world.
+- **Enhanced Features:**
+  - **Compelling Hero:** Multi-language hero section with rotating real-world use cases
+  - **Impact Stories:** Showcase developers solving real problems (freelancer payments, micro-lending, community governance)
+  - **Interactive Demo:** Live, interactive SDK demo with multiple use case scenarios
+  - **Global Statistics:** Real-time dashboard showing global impact metrics
+  - **Trust Calculator:** Interactive tool showing potential trust improvements
+  - **Video Testimonials:** Developers from different countries sharing success stories
+  - **Accessibility:** Full keyboard navigation, screen reader support, high contrast mode
+- **Social Proof Elements:**
+  - Developer testimonials from 6 continents
+  - Real-time counter of agreements created
+  - Map showing global developer distribution
+  - Success stories from underserved communities
+
+### Comprehensive Pricing Page (`/pricing`)
+- **Purpose:** Provide transparent, globally accessible pricing with social impact considerations.
+- **Enhanced Features:**
+  - **Regional Pricing:** PPP-adjusted pricing for different economic regions
+  - **Social Impact Tiers:** Special pricing for NGOs, educational institutions, and community projects
+  - **Transparent Cost Breakdown:** Clear explanation of where fees go (development, gas sponsorship, social impact)
+  - **ROI Calculator:** Help developers calculate potential returns from trust improvements
+  - **Flexible Payment Options:** Support for multiple currencies, payment methods, and crypto
+  - **Community Funding:** Option for developers to apply for community-sponsored access
+- **Pricing Tiers:**
+  - **Community (Free):** For open-source projects and social impact initiatives
+  - **Startup:** For early-stage companies with social impact discounts
+  - **Business:** For established companies with enterprise features
+  - **Enterprise:** Custom solutions with dedicated support and compliance
+  - **Social Impact:** Special tier for NGOs and community organizations
+
+### Advanced Documentation Hub (`/docs`)
+- **Purpose:** Provide world-class documentation that empowers developers globally.
+- **Enhanced Structure:**
+  - **Multi-language Support:** Documentation in 10+ major languages
+  - **Interactive Tutorials:** Step-by-step guides with live code examples
+  - **Use Case Galleries:** Pre-built solutions for common trust problems
+  - **Video Courses:** Comprehensive video training series
+  - **Community Wiki:** Developer-contributed content and best practices
+  - **Accessibility Guides:** How to build inclusive trust applications
+- **Content Categories:**
+  - **Quick Start:** 5-minute integration guide
+  - **Use Case Tutorials:** Freelance platforms, lending, gaming, governance
+  - **API Reference:** Complete SDK documentation with examples
+  - **Best Practices:** Security, UX, and social impact guidelines
+  - **Integration Guides:** Popular frameworks and platforms
+  - **Troubleshooting:** Common issues and solutions
+  - **Community Contributions:** Developer-shared templates and tools
+
+### Enhanced Authentication (`/auth`)
+- **Purpose:** Provide secure, accessible, and globally inclusive authentication.
+- **Enhanced Features:**
+  - **Multiple Auth Methods:** Email/password, social login (Google, GitHub, Apple), phone number
+  - **Progressive KYC:** Start with basic verification, upgrade as needed
+  - **Accessibility:** Full screen reader support, keyboard navigation
+  - **Multi-language:** Authentication flow in user's preferred language
+  - **Security:** 2FA, device fingerprinting, suspicious activity detection
+  - **Privacy:** GDPR/CCPA compliant with clear privacy controls
+- **Onboarding Flow:**
+  - Welcome survey to understand developer's goals and background
+  - Personalized setup based on use case and experience level
+  - Interactive tutorial tailored to their selected use case
+  - Community introduction and mentorship matching
+
+### Comprehensive Developer Dashboard (`/dashboard`)
+- **Purpose:** Provide a powerful, intuitive control center for developers worldwide.
+- **Enhanced Sections:**
+
+#### **Overview Dashboard**
+- **Real-time Metrics:** Live statistics with beautiful visualizations
+- **Impact Summary:** Social impact metrics and SDG contributions
+- **Performance Insights:** API usage patterns and optimization suggestions
+- **Global Reach:** Map showing where your applications are being used
+- **Trust Score:** Your applications' trust improvement metrics
+
+#### **API Management**
+- **Multi-key Support:** Different keys for development, staging, production
+- **Granular Permissions:** Fine-grained access control for team members
+- **Usage Analytics:** Detailed breakdown with cost optimization suggestions
+- **Rate Limiting:** Custom rate limits with burst allowances
+- **Webhook Management:** Reliable webhook delivery with retry logic
+- **Testing Tools:** Built-in API testing and simulation environment
+
+#### **Application Gallery**
+- **Live Applications:** Showcase of your deployed applications
+- **Performance Monitoring:** Real-time performance and user satisfaction metrics
+- **User Feedback:** Aggregated feedback from your application users
+- **A/B Testing:** Built-in tools for testing different trust mechanisms
+- **Social Impact Reports:** Detailed reports on positive impact created
+
+#### **Financial Management**
+- **Credit Usage:** Detailed usage with predictive forecasting
+- **Cost Optimization:** AI-powered suggestions for reducing costs
+- **Billing History:** Comprehensive billing with detailed breakdowns
+- **Social Discounts:** Track and apply for social impact discounts
+- **Revenue Sharing:** For applications that generate social impact
+
+#### **Community & Support**
+- **Mentor Matching:** Connect with experienced developers
+- **Community Forum:** Integrated discussion and support forum
+- **Office Hours:** Regular video calls with PactDa team
+- **Success Stories:** Share and discover impact stories
+- **Collaboration Tools:** Find collaborators for social impact projects
+
+### Social Impact Hub (`/impact`) - **NEW**
+- **Purpose:** Showcase and amplify the positive impact created through the platform.
+- **Features:**
+  - **Global Impact Dashboard:** Real-time metrics on social impact
+  - **Success Stories:** Detailed case studies of positive impact
+  - **SDG Tracking:** Contribution to UN Sustainable Development Goals
+  - **Community Projects:** Showcase of community-funded initiatives
+  - **Impact Marketplace:** Connect developers with social impact opportunities
+  - **Research & Reports:** Academic research on trust and social impact
+
+### Developer Community (`/community`) - **NEW**
+- **Purpose:** Foster a global community of developers building trust-based applications.
+- **Features:**
+  - **Discussion Forums:** Topic-based discussions with multi-language support
+  - **Developer Spotlight:** Feature outstanding community members
+  - **Mentorship Program:** Connect experienced and new developers
+  - **Local Chapters:** Support for local developer meetups and events
+  - **Open Source Gallery:** Showcase open-source trust applications
+  - **Hackathons & Contests:** Regular events with social impact themes
+
+### Educational Resources (`/learn`) - **NEW**
+- **Purpose:** Provide comprehensive education on trust, blockchain, and social impact.
+- **Features:**
+  - **Trust Academy:** Comprehensive courses on trust mechanisms
+  - **Blockchain Basics:** Accessible introduction to blockchain concepts
+  - **Social Impact Guide:** How to build applications that help communities
+  - **Case Study Library:** Real-world examples of trust solutions
+  - **Interactive Simulations:** Learn through hands-on experimentation
+  - **Certification Program:** Recognized certification for trust application developers
+
+## 4. Enhanced Accessibility & Inclusion
+
+### **Universal Design Principles**
+- **WCAG 2.1 AA Compliance:** Full accessibility for users with disabilities
+- **Keyboard Navigation:** Complete functionality without mouse
+- **Screen Reader Optimization:** Semantic HTML with proper ARIA labels
+- **High Contrast Mode:** Support for users with visual impairments
+- **Font Scaling:** Support for up to 200% zoom without loss of functionality
+- **Motion Sensitivity:** Respect for users' motion preferences
+
+### **Global Accessibility**
+- **Multi-language Support:** 20+ languages with professional translations
+- **RTL Text Support:** Full support for right-to-left languages
+- **Cultural Sensitivity:** Culturally appropriate imagery and content
+- **Economic Accessibility:** Works on low-end devices and slow networks
+- **Offline Capability:** Core functionality available offline
+- **Progressive Enhancement:** Works without JavaScript for basic functionality
+
+### **Inclusive Design**
+- **Diverse Imagery:** Representative imagery from all cultures and backgrounds
+- **Inclusive Language:** Gender-neutral and culturally sensitive language
+- **Multiple Learning Styles:** Visual, auditory, and kinesthetic learning options
+- **Economic Sensitivity:** Pricing and messaging appropriate for all economic levels
+- **Technology Agnostic:** Works across all devices and browsers
+
+## 5. Advanced Technical Features
+
+### **Performance Optimization**
+- **Global CDN:** Sub-second load times worldwide
+- **Progressive Web App:** App-like experience with offline support
+- **Image Optimization:** Automatic image optimization and lazy loading
+- **Code Splitting:** Optimized JavaScript bundles for faster loading
+- **Caching Strategy:** Intelligent caching with real-time updates
+- **Core Web Vitals:** Optimal scores for all performance metrics
+
+### **Security & Privacy**
+- **Zero-Trust Architecture:** Comprehensive security throughout
+- **Privacy by Design:** GDPR, CCPA, and LGPD compliant
+- **Data Minimization:** Collect only necessary data
+- **Encryption:** End-to-end encryption for sensitive data
+- **Audit Logging:** Comprehensive audit trails for security
+- **Incident Response:** Rapid response to security issues
+
+### **Analytics & Insights**
+- **Privacy-First Analytics:** No tracking without consent
+- **Social Impact Metrics:** Measure positive impact created
+- **Developer Success Metrics:** Track developer journey and success
+- **A/B Testing:** Optimize for better developer experience
+- **Real-time Monitoring:** Monitor site performance and user experience
+- **Feedback Integration:** Continuous feedback collection and analysis
+
+## 6. Social Impact Integration
+
+### **Impact Measurement**
+- **SDG Alignment:** Track contribution to UN Sustainable Development Goals
+- **Community Benefits:** Measure improvements in trust and cooperation
+- **Financial Inclusion:** Track unbanked population integration
+- **Economic Empowerment:** Monitor small business and freelancer success
+- **Education Impact:** Measure learning and skill development
+
+### **Social Features**
+- **Impact Stories:** Share and celebrate positive impact
+- **Community Funding:** Crowdfund social impact projects
+- **Volunteer Matching:** Connect developers with volunteer opportunities
+- **Social Challenges:** Gamified challenges for social good
+- **Impact Leaderboards:** Recognize top contributors to social impact
+
+## 7. Implementation Roadmap
+
+### **Phase 1: Foundation (Months 1-2)**
+- Enhanced landing page with multi-language support
+- Accessible authentication and basic dashboard
+- Core documentation with interactive examples
+- Basic community features
+
+### **Phase 2: Advanced Features (Months 3-4)**
+- Comprehensive developer dashboard with analytics
+- Social impact hub and measurement tools
+- Advanced documentation with video content
+- Community platform with mentorship
+
+### **Phase 3: Global Scale (Months 5-6)**
+- Full 20+ language support with cultural adaptation
+- Advanced accessibility features
+- AI-powered developer assistance
+- Global community events and partnerships
+
+## 8. Success Metrics & KPIs
+
+### **Developer Success Metrics**
+- **Adoption Rate:** 10,000+ active developers by year 1
+- **Global Reach:** Developers from 100+ countries
+- **Retention Rate:** 80%+ monthly active developers
+- **Time to First Success:** < 1 hour from signup to first working application
+- **Community Engagement:** 50%+ of developers participate in community
+
+### **Accessibility Metrics**
+- **WCAG Compliance:** 100% AA compliance across all pages
+- **Global Performance:** < 3s load time in all regions
+- **Language Coverage:** 90%+ of global developer population covered
+- **Device Compatibility:** Works on 95%+ of devices globally
+- **Offline Usage:** 30%+ of users utilize offline features
+
+### **Social Impact Metrics**
+- **Global Impact:** 1M+ people positively impacted through platform
+- **SDG Contribution:** Measurable contribution to 10+ SDGs
+- **Community Projects:** 1,000+ social impact projects launched
+- **Financial Inclusion:** 100,000+ unbanked users onboarded
+- **Trust Improvement:** 95%+ agreement completion rate without disputes
+
+### **Business Metrics**
+- **Conversion Rate:** 25%+ of visitors sign up for accounts
+- **Upgrade Rate:** 40%+ of free users upgrade to paid plans
+- **Support Efficiency:** 90%+ of issues resolved through self-service
+- **Developer Satisfaction:** 4.8+ star rating from developer community
+- **Revenue Growth:** Sustainable growth funding continued development
+
+## 9. Key Principles for Global Impact
+
+### **Accessibility First**
+- Every feature must be accessible to users with disabilities
+- Support for low-bandwidth and low-end devices
+- Multi-language and cultural adaptation
+- Economic accessibility with flexible pricing
+
+### **Community Driven**
+- Developer feedback drives all major decisions
+- Open source components where possible
+- Community-contributed content and features
+- Transparent communication and roadmap
+
+### **Social Impact Focus**
+- Measure and optimize for positive social impact
+- Provide tools and resources for social good applications
+- Partner with NGOs and social impact organizations
+- Regular reporting on global impact metrics
+
+### **Global Sustainability**
+- Carbon-neutral hosting and operations
+- Sustainable business model supporting long-term development
+- Economic empowerment for developers worldwide
+- Environmental consciousness in all decisions
+
+
+- **Professionalism:** The UI should look professional and trustworthy to build confidence in the protocol.
+- **Performance:** Pages should be fast, leveraging Next.js static generation for marketing and documentation pages.
+- **Security:** The login and API key management must be secure.
+

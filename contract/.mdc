@@ -1,0 +1,41 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# PactDa Smart Contract Dev Context (Sui/Move MVP)
+
+## 1. Goal
+Implement the foundational Move smart contracts for the PactDa protocol. The architecture must be **generalist and modular**, supporting a "pluggable" resolution system. The MVP will implement the core agreement logic and **only the `ProgrammaticResolver`** to support the Pioneer Developer Event use case (e.g., wager-based games).
+
+## 2. Core Modules & Objects
+
+### `pactda_core` Module
+- **`PactDaContract` Object:** The central agreement object. Must be generic.
+    - **Fields:** `id: UID`, `parties: vector<address>`, `status: u8`, `escrow_id: ID`, `resolution_policy_id: ID`.
+- **`Escrow` Object:** Securely holds SUI funds for a single `PactDaContract`.
+    - **Fields:** `id: UID`, `contract_id: ID`, `balance: Balance<SUI>`.
+- **Key Functions:**
+    - `create_agreement(parties: vector<address>, resolution_policy_id: ID, ...)`: Creates the `PactDaContract` and its associated `Escrow` object, linking them together.
+    - `fund_escrow(contract: &PactDaContract, escrow: &mut Escrow, payment: Coin<SUI>, ...)`: Allows a listed party to deposit their stake into the escrow.
+    - `settle_agreement(contract: &mut PactDaContract, escrow: &mut Escrow, resolver: &ResolutionPolicyObject)`: A critical function that reads the final outcome from the linked resolver object and triggers the escrow payout based on that outcome (e.g., to the winner).
+
+### `resolution_policies::programmatic_resolver` Module
+- **`ProgrammaticResolver` Object:** The only resolver to implement for the MVP.
+    - **Fields:** `id: UID`, `contract_id: ID`, `authority_address: address` (the trusted judge), `outcome: Option<address>` (the declared winner).
+- **Key Function:**
+    - `report_outcome(resolver: &mut Self, winner_address: address, ctx: &mut TxContext)`: The main entry point for this resolver.
+        - **Security:** Must strictly `assert!` that `tx_context::sender(ctx) == self.authority_address`. This is the core security guarantee.
+        - **Action:** Sets the `outcome` field to the `winner_address`.
+
+### `pactda_admin` Module
+- **`AdminCap` Object:** A one-time capability object created on publish and transferred to the admin/deployer.
+- **`admin_mint_vcnft(...)` Function:** A simple function requiring `&AdminCap` to mint placeholder VCNFTs for future demos.
+
+## 3. Key Principles & Conventions
+- **Modularity:** Keep logic separated. The `pactda_core` module should know nothing about the internal workings of the `programmatic_resolver`, only that it has a readable `outcome`.
+- **Security First:** Implement strict access control checks using `assert!` and `tx_context::sender(ctx)` in all critical functions (`report_outcome`, admin functions, etc.).
+- **Events:** Emit events for key state changes (`AgreementCreated`, `EscrowFunded`, `OutcomeReported`, `AgreementSettled`) to allow off-chain services to track activity.
+- **Gas Efficiency:** While secondary to security, aim for efficient state management.
+- **Naming:** Follow official Sui Move conventions (CamelCase for structs/objects, snake_case for functions).
+
