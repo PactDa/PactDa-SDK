@@ -3,207 +3,62 @@ description:
 globs: 
 alwaysApply: false
 ---
-# PactDa SDK Dev Context (PactDa-Lite v0.1) - Enhanced for Global Impact
+# PactDa SDK Dev Context (PactDa-Lite v0.1)
 
 ## 1. Goal
-Create an extremely simple and intuitive TypeScript SDK (`@pactda/sdk-lite`) that democratizes access to trust and escrow mechanisms globally. The primary design principle is **maximum abstraction with maximum impact**: developers should be able to build trust-based applications that can help solve real-world problems like freelancer payments, peer-to-peer lending, community governance, and fair gaming without understanding blockchain complexity.
+Create an extremely simple and intuitive TypeScript SDK (`@pactda/sdk-lite`) for developers to integrate PactDa's trust features. The primary design principle is **maximum abstraction**: developers should not need to understand Move, gas fees, or complex blockchain interactions. The SDK should also provide "Onboarding-as-a-Service" via Sui Enoki.
 
-## 2. Core Functions & Enhanced Logic
+## 2. Tech Stack & Dependencies
+- **Language:** TypeScript
+- **Target Environments:** Node.js and modern browsers
+- **Bundler:** Vite (in library mode) or Rollup
+- **Distribution:** npm as `@pactda/sdk-lite`
+- **Primary Dependencies:** Sui Enoki SDK, a lightweight HTTP client (like `axios` or `fetch`), a WebSocket client (like `socket.io-client`).
 
-### `pactda.init({ apiKey: '...', options?: InitOptions })`
-- **Purpose:** Authenticate and configure the SDK for global accessibility.
-- **Enhanced Logic:** 
-  - Store `apiKey` securely in memory with automatic refresh capability
-  - Support offline mode with local caching for developing regions
-  - Auto-detect user's region for compliance and fee optimization
-  - Initialize telemetry for usage analytics (opt-in, privacy-first)
-- **Options:**
-  ```typescript
-  interface InitOptions {
-    region?: 'global' | 'us' | 'eu' | 'asia';
-    offlineMode?: boolean;
-    retryConfig?: RetryConfig;
-    compliance?: ComplianceConfig;
-  }
-  ```
+## 3. Core Functions & Logic
 
-### `pactda.connectUser(options?: ConnectOptions)`
-- **Purpose:** Universal onboarding that works globally, including for unbanked populations.
-- **Enhanced Logic:**
-  1. Integrate **Sui Enoki** with fallback authentication methods
-  2. Support multiple identity providers (Google, Apple, GitHub, phone number)
-  3. Progressive onboarding - start with email, upgrade to full KYC when needed
-  4. Multi-language support for global accessibility
-  5. Accessibility features for users with disabilities
-  6. Educational tooltips for blockchain newcomers
-- **Returns:** `Promise<UserSession>` with enhanced user context
-- **Options:**
-  ```typescript
-  interface ConnectOptions {
-    preferredLanguage?: string;
-    accessibilityMode?: boolean;
-    kycLevel?: 'basic' | 'enhanced' | 'full';
-    educationalMode?: boolean;
-  }
-  ```
+### `pactda.init({ apiKey: '...' })`
+- **Purpose:** Authenticate the developer's application for using the PactDa Protocol's managed services.
+- **Logic:** Store the `apiKey` in memory (e.g., in a private variable within a class or module scope). This key must be sent in the `X-API-Key` HTTP header for all subsequent requests to the PactDa Server API.
 
-### `pactda.createAgreement(params: CreateAgreementParams)`
-- **Purpose:** Create agreements that can solve real-world trust problems globally.
-- **Enhanced Input:**
-  ```typescript
-  interface CreateAgreementParams {
-    parties: PartyInfo[];
-    escrowConfig: EnhancedEscrowConfig;
-    resolutionPolicy: EnhancedResolutionPolicy;
-    metadata?: AgreementMetadata;
-    compliance?: ComplianceRequirements;
-    accessibility?: AccessibilityFeatures;
-  }
-  
-  interface PartyInfo {
-    address: string;
-    role: 'buyer' | 'seller' | 'arbiter' | 'stakeholder';
-    displayName?: string;
-    contactInfo?: ContactInfo;
-  }
-  
-  interface EnhancedEscrowConfig {
-    inputs: EscrowInput[];
-    payoutLogic: PayoutStrategy;
-    protectionMechanisms: ProtectionConfig;
-    emergencyRelease?: EmergencyConfig;
-  }
-  ```
-- **Enhanced Logic:**
-  1. Validate agreement fairness and detect potential scams
-  2. Suggest best practices based on agreement type
-  3. Auto-generate legal-friendly agreement summaries
-  4. Support for multi-currency and stablecoin escrows
-  5. Built-in dispute prevention mechanisms
-  6. Compliance checks for different jurisdictions
-- **Returns:** `Promise<Agreement>` with comprehensive agreement object
-
-### `pactda.reportOutcome(params: ReportOutcomeParams)`
-- **Purpose:** Enable fair and transparent resolution with audit trails.
-- **Enhanced Input:**
-  ```typescript
-  interface ReportOutcomeParams {
-    agreementId: string;
-    outcomeData: OutcomeData;
-    evidence?: Evidence[];
-    reasoning?: string;
-    appealPeriod?: number;
-  }
-  ```
-- **Enhanced Logic:**
-  1. Require evidence submission for high-value agreements
-  2. Implement cooling-off period for dispute appeals
-  3. Generate detailed resolution reports
-  4. Notify all parties with clear explanations
-  5. Create immutable audit trail
-
-### `pactda.getAgreementStatus(agreementId: string)`
-- **Purpose:** Provide real-time transparency and trust.
+### `pactda.connectUser()`
+- **Purpose:** Provide "Onboarding-as-a-Service" to the integrating application.
 - **Logic:**
-  1. Return comprehensive status with timeline
-  2. Show all parties' actions and timestamps
-  3. Provide estimated completion times
-  4. Include dispute status and appeal options
-- **Returns:** `Promise<AgreementStatus>` with full transparency
+    1.  This function will integrate and trigger the **Sui Enoki** managed UI flow for zkLogin.
+    2.  It should abstract away all the complexity of the OAuth flow and proof generation from the developer.
+    3.  It must correctly handle the session and token returned by the Enoki SDK.
+- **Returns:** A promise that resolves with the `suiAddress: string` of the successfully onboarded user.
 
-### `pactda.on(eventName: EventType, callback: EventCallback)`
-- **Purpose:** Enable responsive UIs and proactive user communication.
-- **Enhanced Events:**
-  - `agreementCreated`, `escrowFunded`, `disputeRaised`
-  - `resolutionPending`, `agreementCompleted`, `emergencyTriggered`
-  - `complianceAlert`, `securityWarning`
+### `pactda.createAgreement({ parties: string[], escrowConfig: object, resolutionPolicy: object })`
+- **Purpose:** A single, high-level function to create a fully configured agreement on-chain via a simple API call.
+- **Input (`CreateAgreementParams`):**
+    - `parties: string[]`: An array of participant Sui addresses.
+    - `escrowConfig: object`: e.g., `{ inputs: [{ party: '...', amount: 10 }, ...], payoutLogic: 'WINNER_TAKE_ALL' }`
+    - `resolutionPolicy: object`: e.g., `{ type: 'PROGRAMMATIC', authority: 'judge_addr' }`
 - **Logic:**
-  1. Establish resilient WebSocket connection with auto-reconnect
-  2. Support offline event queuing
-  3. Provide event replay for missed notifications
-  4. Enable push notifications for mobile apps
+    1.  Bundles the input parameters into a JSON payload.
+    2.  Makes a single, authenticated POST request to the PactDa Server's `/api/v1/agreements/create` endpoint.
+    3.  The SDK must then handle the server's response, which may include instructions for prompting each party to fund the escrow. This multi-step process should be abstracted away from the developer.
+- **Returns:** A promise that resolves with the `agreementId: string`.
 
-### `pactda.dispute.raise(params: DisputeParams)` - **NEW**
-- **Purpose:** Provide fair dispute resolution mechanisms.
+### `pactda.reportOutcome({ agreementId: '...', outcomeData: object })`
+- **Purpose:** Allows the designated authority (e.g., a game server) to resolve an agreement. This must be called from a secure, server-side environment by the developer.
+- **Input (`ReportOutcomeParams`):**
+    - `agreementId: string`
+    - `outcomeData: object`: e.g., `{ winner: 'sui_addr_a' }`
 - **Logic:**
-  1. Guide users through structured dispute process
-  2. Collect evidence and statements from all parties
-  3. Suggest mediation before formal arbitration
-  4. Integrate with human arbitrators for complex cases
+    1.  Makes an authenticated POST request to the PactDa Server's `/api/v1/agreements/resolve` endpoint.
+    2.  The server verifies the API key is associated with the `authority_address` for this agreement.
+- **Returns:** A promise that resolves on success.
 
-### `pactda.templates.get(category: string)` - **NEW**
-- **Purpose:** Democratize access to fair agreement structures.
-- **Categories:** 'freelance', 'lending', 'marketplace', 'gaming', 'governance'
+### `pactda.on(eventName, callback)` (Stretch Goal)
+- **Purpose:** Enable real-time UI updates in the developer's application.
 - **Logic:**
-  1. Provide pre-audited, fair agreement templates
-  2. Include best practices and legal considerations
-  3. Support customization while maintaining fairness
+    1.  Establish and manage a WebSocket connection to the PactDa Server's WebSocket gateway.
+    2.  Handle event subscriptions for agreements relevant to the API key.
+    3.  Invoke the developer's `callback` function when a relevant event (e.g., `escrowFunded`, `agreementSettled`) is received.
 
-### `pactda.analytics.getInsights(developerId: string)` - **NEW**
-- **Purpose:** Help developers build better, fairer applications.
-- **Returns:** Anonymized insights about agreement success rates, common disputes, user satisfaction
-
-## 3. Enhanced Principles for Global Impact
-
-### **Accessibility First**
-- Full screen reader support and keyboard navigation
-- Multi-language support with RTL text support
-- Works on low-end devices and slow networks
-- Offline-first architecture for developing regions
-
-### **Trust & Transparency**
-- All actions create immutable audit trails
-- Clear, jargon-free explanations for all operations
-- Proactive fraud detection and prevention
-- Educational content integrated throughout
-
-### **Global Scalability**
-- Support for multiple currencies and payment methods
-- Compliance with international regulations (GDPR, CCPA, etc.)
-- Optimized for various network conditions
-- Cultural sensitivity in UX design
-
-### **Developer Success**
-- Comprehensive error messages with suggested fixes
-- Built-in testing and simulation modes
-- Performance monitoring and optimization suggestions
-- Community support and best practices sharing
-
-### **Social Impact Metrics**
-- Track agreements that solve real-world problems
-- Measure trust score improvements in communities
-- Monitor dispute resolution effectiveness
-- Report on financial inclusion improvements
-
-## 4. Implementation Phases
-
-### **Phase 1: Core Trust Infrastructure**
-- Basic agreement creation and resolution
-- Multi-language support for top 10 languages
-- Accessibility compliance (WCAG 2.1 AA)
-- Fraud detection basics
-
-### **Phase 2: Advanced Features**
-- Dispute resolution system
-- Template marketplace
-- Advanced analytics and insights
-- Mobile SDK variants
-
-### **Phase 3: Global Impact**
-- Integration with social impact measurement
-- Partnerships with NGOs and development organizations
-- Advanced AI-powered fairness detection
-- Micro-finance and unbanked population support
-
-## 5. Success Metrics
-- **Developer Adoption:** Number of applications built
-- **User Trust:** Agreement completion rates without disputes
-- **Global Reach:** Number of countries and languages supported
-- **Social Impact:** Real-world problems solved through the platform
-- **Financial Inclusion:** Unbanked users successfully onboarded
-
-
-- **Type Safety:** The entire SDK must be written in TypeScript and published with full type definitions.
-- **Simplicity:** Function names should be high-level and intuitive. The developer should not need to interact with `TransactionBlock` or the Sui SDK directly when using `PactDa-Lite`.
-- **Documentation:** Every function must be clearly documented with JSDoc comments, including code examples.
-
+## 4. Key Principles
+- **Type Safety:** The entire SDK must be written in TypeScript and published with full, well-documented type definitions for all public functions and parameters.
+- **Simplicity & Abstraction:** The developer should NEVER need to interact with `TransactionBlock`, the `@mysten/sui.js` SDK directly, or worry about gas fees when using this `PactDa-Lite` SDK.
+- **Documentation:** Every exported function must have clear JSDoc comments explaining its purpose, parameters, and return value, with code examples.

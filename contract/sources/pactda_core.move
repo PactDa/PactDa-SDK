@@ -18,6 +18,7 @@ module pactda::pactda_core {
     use std::option::{Self, Option};
     use std::vector;
     use sui::clock::{Clock};
+    use pactda::resolution_policies::{Self, ProgrammaticResolver};
 
     // === Error Codes ===
     const EUnauthorized: u64 = 1;
@@ -49,8 +50,8 @@ module pactda::pactda_core {
         // Core fields as specified in MVP
         parties: vector<address>,
         status: u8,
-        escrow_id: Option<ID>,
-        resolution_policy_id: Option<ID>,
+        escrow_id: ID,
+        resolution_policy_id: ID,
         
         // Additional essential fields
         title: String,
@@ -64,9 +65,9 @@ module pactda::pactda_core {
         // Core fields as specified in MVP
         contract_id: ID,
         balance: Balance<SUI>,
-        status: u8,
         
         // Additional essential fields
+        status: u8,
         funded_by: vector<address>,
         funded_amounts: vector<u64>,
         created_at: u64,
@@ -74,9 +75,11 @@ module pactda::pactda_core {
 
     // === Events ===
 
-    /// Contract Created Event
-    public struct ContractCreatedEvent has copy, drop {
+    /// Agreement Created Event
+    public struct AgreementCreatedEvent has copy, drop {
         contract_id: ID,
+        escrow_id: ID,
+        resolution_policy_id: ID,
         parties: vector<address>,
         creator: address,
         title: String,
@@ -104,11 +107,11 @@ module pactda::pactda_core {
 
     // === Core Functions ===
 
-    /// Create a new agreement - MVP Implementation
+    /// Create agreement - MVP Implementation matching spec
     public entry fun create_agreement(
         parties: vector<address>,
+        resolver: ProgrammaticResolver,
         title: String,
-        resolution_policy_id: Option<ID>,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
@@ -119,36 +122,58 @@ module pactda::pactda_core {
         assert!(vector::length(&parties) >= 2, EInvalidParty);
         assert!(!vector::is_empty(&parties), EInvalidParty);
         
-        // Create contract
+        let resolver_id = object::id(&resolver);
+        
+        // Create UIDs for proper linking
+        let contract_uid = object::new(ctx);
+        let escrow_uid = object::new(ctx);
+        let contract_id = object::uid_to_inner(&contract_uid);
+        let escrow_id = object::uid_to_inner(&escrow_uid);
+        
+        // Create contract with linked escrow ID
         let contract = PactDaContract {
-            id: object::new(ctx),
+            id: contract_uid,
             parties,
             status: CONTRACT_STATUS_DRAFT,
-            escrow_id: option::none(),
-            resolution_policy_id,
+            escrow_id,
+            resolution_policy_id: resolver_id,
             title,
             created_at: current_time,
             creator: sender,
         };
         
-        let contract_id = object::id(&contract);
+        // Create escrow with linked contract ID
+        let escrow = Escrow {
+            id: escrow_uid,
+            contract_id,
+            balance: balance::zero(),
+            status: ESCROW_STATUS_EMPTY,
+            funded_by: vector::empty(),
+            funded_amounts: vector::empty(),
+            created_at: current_time,
+        };
         
         // Emit event
-        event::emit(ContractCreatedEvent {
+        event::emit(AgreementCreatedEvent {
             contract_id,
+            escrow_id,
+            resolution_policy_id: resolver_id,
             parties: contract.parties,
             creator: sender,
             title,
             timestamp: current_time,
         });
         
-        // Make contract shared so parties can interact with it
+        // Make all objects shared
         transfer::public_share_object(contract);
+        transfer::public_share_object(escrow);
+        transfer::public_share_object(resolver);
     }
 
     /// Fund escrow - MVP Implementation
     public entry fun fund_escrow(
         contract: &mut PactDaContract,
+        escrow: &mut Escrow,
         payment: Coin<SUI>,
         clock: &Clock,
         ctx: &mut TxContext,
@@ -158,68 +183,66 @@ module pactda::pactda_core {
         
         // Validate sender is a party
         assert!(vector::contains(&contract.parties, &sender), EUnauthorized);
-        assert!(contract.status == CONTRACT_STATUS_DRAFT, EInvalidStatus);
+        // Allow funding in both DRAFT and ACTIVE status for multiple party funding
+        assert!(contract.status == CONTRACT_STATUS_DRAFT || contract.status == CONTRACT_STATUS_ACTIVE, EInvalidStatus);
+        
+        // Validate escrow belongs to contract
+        assert!(escrow.contract_id == object::id(contract), EEscrowNotFound);
         
         let amount = coin::value(&payment);
         assert!(amount > 0, EInsufficientFunds);
         
-        // Create or update escrow
-        if (option::is_none(&contract.escrow_id)) {
-            // Create new escrow
-            let escrow = Escrow {
-                id: object::new(ctx),
-                contract_id: object::id(contract),
-                balance: coin::into_balance(payment),
-                status: ESCROW_STATUS_FUNDED,
-                funded_by: vector::singleton(sender),
-                funded_amounts: vector::singleton(amount),
-                created_at: current_time,
-            };
-            
-            let escrow_id = object::id(&escrow);
-            contract.escrow_id = option::some(escrow_id);
-            contract.status = CONTRACT_STATUS_ACTIVE;
-            
-            // Emit event
-            event::emit(EscrowFundedEvent {
-                escrow_id,
-                contract_id: object::id(contract),
-                funded_by: sender,
-                amount,
-                total_balance: amount,
-                timestamp: current_time,
-            });
-            
-            transfer::public_share_object(escrow);
-        } else {
-            // This is a simplified MVP - in production you'd handle multiple fundings
-            abort EAlreadyFunded
-        };
+        // Add funds to escrow
+        balance::join(&mut escrow.balance, coin::into_balance(payment));
+        vector::push_back(&mut escrow.funded_by, sender);
+        vector::push_back(&mut escrow.funded_amounts, amount);
+        
+        // Update status
+        escrow.status = ESCROW_STATUS_FUNDED;
+        contract.status = CONTRACT_STATUS_ACTIVE;
+        
+        let total_balance = balance::value(&escrow.balance);
+        
+        // Emit event
+        event::emit(EscrowFundedEvent {
+            escrow_id: object::id(escrow),
+            contract_id: object::id(contract),
+            funded_by: sender,
+            amount,
+            total_balance,
+            timestamp: current_time,
+        });
     }
 
-    /// Settle agreement - MVP Implementation
+    /// Settle agreement - MVP Implementation reading from resolver
     public entry fun settle_agreement(
         contract: &mut PactDaContract,
         escrow: &mut Escrow,
-        winner: address,
+        resolver: &ProgrammaticResolver,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
         let current_time = sui::clock::timestamp_ms(clock);
         
         // Validate escrow belongs to contract
-        assert!(option::contains(&contract.escrow_id, &object::id(escrow)), EEscrowNotFound);
         assert!(escrow.contract_id == object::id(contract), EEscrowNotFound);
+        assert!(contract.escrow_id == object::id(escrow), EEscrowNotFound);
         
-        // Validate winner is a party
-        assert!(vector::contains(&contract.parties, &winner), EInvalidParty);
+        // Validate resolver belongs to contract
+        assert!(contract.resolution_policy_id == object::id(resolver), ENotResolved);
         
         // Validate status
         assert!(contract.status == CONTRACT_STATUS_ACTIVE, EInvalidStatus);
         assert!(escrow.status == ESCROW_STATUS_FUNDED, EInvalidStatus);
         
-        // For MVP, we'll require resolution policy to authorize this
-        assert!(option::is_some(&contract.resolution_policy_id), ENotResolved);
+        // Read outcome from resolver - MVP spec requirement
+        assert!(resolution_policies::is_resolved(resolver), ENotResolved);
+        let winner_option = resolution_policies::get_outcome(resolver);
+        assert!(option::is_some(&winner_option), ENotResolved);
+        let winner = *option::borrow(&winner_option);
+        
+        // Validate winner is a party
+        assert!(vector::contains(&contract.parties, &winner), EInvalidParty);
         
         // Transfer funds to winner
         let total_amount = balance::value(&escrow.balance);
@@ -248,8 +271,8 @@ module pactda::pactda_core {
     // === Getter Functions for SDK/API ===
 
     /// Get contract details
-    public fun get_contract_details(contract: &PactDaContract): (vector<address>, u8, Option<ID>, String) {
-        (contract.parties, contract.status, contract.resolution_policy_id, contract.title)
+    public fun get_contract_details(contract: &PactDaContract): (vector<address>, u8, ID, ID, String) {
+        (contract.parties, contract.status, contract.escrow_id, contract.resolution_policy_id, contract.title)
     }
 
     /// Get escrow details

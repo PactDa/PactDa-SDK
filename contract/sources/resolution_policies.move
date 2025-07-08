@@ -33,9 +33,8 @@ module pactda::resolution_policies {
     public struct ProgrammaticResolver has key, store {
         id: UID,
         // Core fields as specified in MVP
-        contract_id: ID,
         authority_address: address,
-        outcome: u8,
+        outcome: Option<address>, // MVP spec: Option<address> (the declared winner)
         
         // Additional essential fields
         created_at: u64,
@@ -48,7 +47,6 @@ module pactda::resolution_policies {
     /// Resolver Created Event
     public struct ResolverCreatedEvent has copy, drop {
         resolver_id: ID,
-        contract_id: ID,
         authority_address: address,
         timestamp: u64,
     }
@@ -56,9 +54,8 @@ module pactda::resolution_policies {
     /// Outcome Reported Event
     public struct OutcomeReportedEvent has copy, drop {
         resolver_id: ID,
-        contract_id: ID,
         authority_address: address,
-        outcome: u8,
+        winner_address: address,
         resolution_data: String,
         timestamp: u64,
     }
@@ -66,19 +63,17 @@ module pactda::resolution_policies {
     // === Core Functions ===
 
     /// Create a new programmatic resolver
-    public entry fun create_resolver(
-        contract_id: ID,
+    public fun create_resolver(
         authority_address: address,
         clock: &Clock,
         ctx: &mut TxContext,
-    ): ID {
+    ): ProgrammaticResolver {
         let current_time = sui::clock::timestamp_ms(clock);
         
         let resolver = ProgrammaticResolver {
             id: object::new(ctx),
-            contract_id,
             authority_address,
-            outcome: OUTCOME_PENDING,
+            outcome: option::none(), // MVP spec: starts as None
             created_at: current_time,
             resolved_at: option::none(),
             resolution_data: string::utf8(b""),
@@ -89,53 +84,39 @@ module pactda::resolution_policies {
         // Emit event
         event::emit(ResolverCreatedEvent {
             resolver_id,
-            contract_id,
             authority_address,
             timestamp: current_time,
         });
         
-        transfer::public_share_object(resolver);
-        resolver_id
+        resolver
     }
 
-    /// Report outcome - Critical security checkpoint
+    /// Report outcome - MVP spec implementation
     public entry fun report_outcome(
         resolver: &mut ProgrammaticResolver,
-        outcome: u8,
-        resolution_data: String,
+        winner_address: address,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
         let sender = tx_context::sender(ctx);
         let current_time = sui::clock::timestamp_ms(clock);
         
-        // Critical security check - only authority can report outcome
+        // Critical security check - MVP spec requirement
         assert!(sender == resolver.authority_address, EUnauthorized);
         
         // Validate outcome hasn't been set yet
-        assert!(resolver.outcome == OUTCOME_PENDING, EAlreadyResolved);
+        assert!(option::is_none(&resolver.outcome), EAlreadyResolved);
         
-        // Validate outcome value
-        assert!(
-            outcome == OUTCOME_PARTY_A_WINS || 
-            outcome == OUTCOME_PARTY_B_WINS || 
-            outcome == OUTCOME_DRAW || 
-            outcome == OUTCOME_CANCELLED,
-            EInvalidOutcome
-        );
-        
-        // Set the outcome
-        resolver.outcome = outcome;
+        // Set the outcome - MVP spec: sets outcome field to winner_address
+        resolver.outcome = option::some(winner_address);
         resolver.resolved_at = option::some(current_time);
-        resolver.resolution_data = resolution_data;
         
         // Emit event
         event::emit(OutcomeReportedEvent {
             resolver_id: object::id(resolver),
-            contract_id: resolver.contract_id,
             authority_address: sender,
-            outcome,
-            resolution_data,
+            winner_address,
+            resolution_data: resolver.resolution_data,
             timestamp: current_time,
         });
     }
@@ -143,17 +124,17 @@ module pactda::resolution_policies {
     // === Getter Functions for SDK/API ===
 
     /// Get resolver details
-    public fun get_resolver_details(resolver: &ProgrammaticResolver): (ID, address, u8, String) {
-        (resolver.contract_id, resolver.authority_address, resolver.outcome, resolver.resolution_data)
+    public fun get_resolver_details(resolver: &ProgrammaticResolver): (address, Option<address>, String) {
+        (resolver.authority_address, resolver.outcome, resolver.resolution_data)
     }
 
     /// Check if resolver is resolved
     public fun is_resolved(resolver: &ProgrammaticResolver): bool {
-        resolver.outcome != OUTCOME_PENDING
+        option::is_some(&resolver.outcome)
     }
 
     /// Get outcome
-    public fun get_outcome(resolver: &ProgrammaticResolver): u8 {
+    public fun get_outcome(resolver: &ProgrammaticResolver): Option<address> {
         resolver.outcome
     }
 

@@ -193,4 +193,16 @@ module pactda::pactda_admin {
     public fun has_permission(admin_cap: &AdminCap, permission: String): bool {
         vector::contains(&admin_cap.permissions, &permission)
     }
+
+    #[test_only]
+    public fun is_valid_admin(admin_cap: &AdminCap): bool {
+        // Basic validation - admin cap exists and has valid permissions
+        vector::length(&admin_cap.permissions) > 0 && 
+        admin_cap.admin_address != @0x0
+    }
+
+    #[test_only]
+    public fun test_admin_cap_creation(ctx: &mut TxContext) {
+        init(ctx)
+    }
 } 
