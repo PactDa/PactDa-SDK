@@ -1,5 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './user/user.module';
+import { CreditModule } from './credit/credit.module';
+import { PaymentModule } from './payment/payment.module';
+import { ApiKeyModule } from './apikey/api-key.module';
+import { ApiModule } from './api/api.module';
+import { PermissionModule } from './permission/permission.module';
 
 @Module({
   imports: [
@@ -13,6 +19,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       autoLoadEntities: true,
       synchronize: true, 
     }),
+    UserModule,
+    CreditModule,
+    PaymentModule,
+    ApiKeyModule,
+    ApiModule,
+    PermissionModule,
   ],
 })
 export class AppModule {}
