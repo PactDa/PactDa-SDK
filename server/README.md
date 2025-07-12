@@ -1,98 +1,125 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# PactDa Server (NestJS + Docker + PostgreSQL)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Overview
+This project is a backend server built with [NestJS](https://nestjs.com/) using TypeORM, PostgreSQL, and Docker Compose. It also includes PgAdmin for database management.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Features
+- NestJS modular architecture
+- TypeORM with PostgreSQL
+- Docker Compose for easy setup
+- PgAdmin for DB management
+- Environment variable support via `.env`
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## Getting Started (English)
 
-```bash
-$ pnpm install
+### 1. Prerequisites
+- [Docker](https://www.docker.com/products/docker-desktop) installed
+- [pnpm](https://pnpm.io/) (for local development)
+
+### 2. Setup
+1. Clone this repository
+2. Go to the `server/` directory
+3. Create a `.env` file (see example below)
+
+#### Example `.env`
+```
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=11223344
+POSTGRES_DB=Pactda_DB
+PGADMIN_DEFAULT_EMAIL=admin@pactda.com
+PGADMIN_DEFAULT_PASSWORD=11223344
+DB_HOST=postgres
+DB_PORT=5432
+DB_USERNAME=admin
+DB_PASSWORD=11223344
+DB_DATABASE=Pactda_DB
 ```
 
-## Compile and run the project
-
+### 3. Start All Services
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+cd server
+# Build and start all containers
+docker-compose up -d --build
 ```
 
-## Run tests
+### 4. Access
+- **API**: [http://localhost:3000](http://localhost:3000)
+- **PgAdmin**: [http://localhost:8080](http://localhost:8080)
+  - Login: use `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD`
 
+### 5. Stopping Services
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+docker-compose down
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## การใช้งาน (ภาษาไทย)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 1. เตรียมเครื่องมือ
+- ติดตั้ง Docker Desktop
+- ติดตั้ง pnpm (ถ้าจะรัน local)
 
+### 2. สร้างไฟล์ `.env` ในโฟลเดอร์ server (ตัวอย่างด้านบน)
+
+### 3. สั่งรัน
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+cd server
+docker-compose up -d --build
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 4. เปิดใช้งาน
+- API: [http://localhost:3000](http://localhost:3000)
+- PgAdmin: [http://localhost:8080](http://localhost:8080)
 
-## Resources
+### 5. หยุดบริการ
+```bash
+docker-compose down
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Troubleshooting
+- ถ้า API 404 หรือเชื่อมต่อ DB ไม่ได้ ให้เช็คว่า `.env` ถูก mount เข้า container หรือยัง
+- ถ้าแก้ไขโค้ดหรือ .env ต้อง `docker-compose down` แล้ว `docker-compose up -d --build` ใหม่
+- ดู log ด้วยคำสั่ง:
+  ```bash
+  docker-compose logs nestjs
+  ```
+- ตรวจสอบสถานะ container:
+  ```bash
+  docker-compose ps
+  ```
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Useful Commands
+- ดู log ทั้งหมด: `docker-compose logs`
+- ดู log เฉพาะ NestJS: `docker-compose logs nestjs`
+- เข้า shell ใน container: `docker-compose exec nestjs sh`
+- เข้า psql: `docker-compose exec postgres psql -U admin -d Pactda_DB`
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Project Structure
+```
+server/
+  ├── src/
+  │   ├── user/
+  │   ├── credit/
+  │   ├── payment/
+  │   ├── apikey/
+  │   ├── api/
+  │   └── permission/
+  ├── docker-compose.yml
+  ├── Dockerfile
+  ├── .env
+  └── README.md
+```
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
