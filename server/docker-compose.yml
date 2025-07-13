@@ -36,7 +36,7 @@ services:
       DB_PORT: ${DB_PORT}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_DATABASE}
+      DB_NAME: ${DB_NAME}
     depends_on:
       - postgres
 

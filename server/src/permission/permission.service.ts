@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApiKeyPermission } from './api-key-permission.entity';
+import { ApiKey } from '../apikey/api-key.entity';
+import { Api } from '../api/api.entity';
 
 @Injectable()
 export class PermissionService {
@@ -87,8 +89,8 @@ export class PermissionService {
       return existingPermission;
     }
     const permission = this.apiKeyPermissionRepository.create();
-    permission.apiKey = { id: apiKeyId } as any;
-    permission.api = { id: apiId } as any;
+    permission.apiKey = { id: apiKeyId } as ApiKey;
+    permission.api = { id: apiId } as Api;
     return this.apiKeyPermissionRepository.save(permission);
   }
 

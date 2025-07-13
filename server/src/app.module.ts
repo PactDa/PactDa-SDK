@@ -23,7 +23,7 @@ import { AppService } from './app.service';
         port: configService.get('DB_PORT', 5432),
         username: configService.get('DB_USERNAME', 'admin'),
         password: configService.get('DB_PASSWORD', '11223344'),
-        database: configService.get('DB_DATABASE', 'Pactda_DB'),
+        database: configService.get('DB_NAME', 'Pactda_DB'),
         autoLoadEntities: true,
         synchronize: true,
       }),
