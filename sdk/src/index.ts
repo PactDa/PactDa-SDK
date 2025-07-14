@@ -19,4 +19,8 @@ export type {
 } from './types'
 
 // Re-export for convenience
-export { createPactDa } from './pactda' 
+export { createPactDa } from './pactda'
+
+// Export services for advanced usage
+export { HttpClient, createHttpClient, ApiEndpoints, MockResponseProvider } from './services'
+export type { HttpClientConfig } from './services' 
