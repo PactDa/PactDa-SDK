@@ -27,8 +27,8 @@ export class User {
   @Column({ type: 'boolean', nullable: false, default: false })
   is_email_verified: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
-  metadata: any;
+ @Column({ type: 'jsonb', nullable: true, default: {} })
+  metadata: Record<string, any>;
 
   @Column({ type: 'integer', nullable: false })
   credit_balance: number;
