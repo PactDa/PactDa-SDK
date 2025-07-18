@@ -1,0 +1,385 @@
+{
+	"info": {
+		"_postman_id": "9c980cc3-cdfd-43bb-a896-1af65615c3c0",
+		"name": "Pactda",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39448911"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "/check-email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/check-email/:email",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"check-email",
+								":email"
+							],
+							"variable": [
+								{
+									"key": "email",
+									"value": ""
+								}
+							]
+						},
+						"description": "Check are email are already have\n\n`200 OK` — this email already have in pactda  \n`404 Not Found` — this email not found in pactda\n\n`500 Internal Server Error` —Internal Server ErrorEndFragment"
+					},
+					"response": []
+				},
+				{
+					"name": "/register",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\" : \"username_example\",\r\n    \"email\" : \"example@gmail.com\",\r\n    \"password\" : \"example_password01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "`201 Created` — Create succesfully\n\n`400 Bad Request` — Missing data and wrong validation\n\n`409 Confilct` — Already have this email\n\n`500 Internal Server Error` — Internal Server Error"
+					},
+					"response": []
+				},
+				{
+					"name": "/login",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\" : \"example@gmail.com\",\r\n    \"password\" : \"example_password01\"\r\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "`200 OK` — Login succesfully\n\n`400 Bad Request` — Missing data and wrong validation\n\n`401 Unauthorized` — not login\n\n`500 Internal Server Error` — Internal Server Error"
+					},
+					"response": []
+				},
+				{
+					"name": "/me",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2N2RmOWMwNjc5YmU3ZmFkYTY2MDA1YWYiLCJ1c2VybmFtZSI6IiQyYiQxMCRYcC5Rdy5Bc29lQWRrSEo4c0YyelllN2tKUEszN0o1ZmthdXIzanV3S2ljTktBSFdLTjJMMiIsImlhdCI6MTc0NTUwMjI3OSwiZXhwIjoxNzQ1NTEzMDc5fQ.qDPm2ni_kBgMt1id19DVNhi6oqC7UA7Rv1NaBvi7a6g",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": "`200 OK` — Login succesfully\n\n`401 Unauthorized` — email or password wrong\n\n`403 Forbidden` — not have permission\n\n`500 Internal Server Error` — Internal Server Error"
+					},
+					"response": []
+				},
+				{
+					"name": "/send_verification_email",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/send_verification_email",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"send_verification_email"
+							]
+						},
+						"description": "`200 OK` — Login succesfully\n\n`401 Unauthorized` — not login\n\n`403 Forbidden` — not have permission\n\n`409 Confilct` — Email is already verified\n\n`500 Internal Server Error` — Internal Server Error"
+					},
+					"response": []
+				},
+				{
+					"name": "/verify-email",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/verify-email?token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"verify-email"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": null
+								}
+							]
+						},
+						"description": "`200 OK` — Login succesfully\n\n`400 Bad Request` — Invalid or missing token\n\n`410 Gone` — Token expired\n\n`409 Confilct` — Email is already verified\n\n`500 Internal Server Error` — Internal Server Error"
+					},
+					"response": []
+				},
+				{
+					"name": "/google/callback",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/google/callback",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"google",
+								"callback"
+							]
+						},
+						"description": "`302 Found` — Redirect found\n\n`400 Bad Request` — Invalid or missing token\n\n`500 Internal Server Error` — Internal Server Error"
+					},
+					"response": []
+				}
+			],
+			"description": "use for Sign in or Log in to pactda or use Oauth2.0 by google"
+		},
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "/users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "`200 OK` — Found succesfully\n\n`401 Unauthorized` — not login\n\n`403 Forbidden` — not have permission\n\n`500 Internal Server Error` — Internal Server Error"
+					},
+					"response": []
+				},
+				{
+					"name": "/users/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						},
+						"description": "`200 OK` — Found succesfully\n\n`401 Unauthorized` — not login\n\n`403 Forbidden` — not have permission\n\n`404 Not Found` — this user not found in pactda\n\n`500 Internal Server Error` — Internal Server Error"
+					},
+					"response": []
+				},
+				{
+					"name": "/api/users/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						},
+						"description": "`200 OK` — Found succesfully\n\n`400 Bad Request` — Missing data and wrong validation\n\n`401 Unauthorized` — not login\n\n`403 Forbidden` — not have permission\n\n`404 Not Found` — this user not found in pactda\n\n`500 Internal Server Error` — Internal Server Error"
+					},
+					"response": []
+				},
+				{
+					"name": "/api/users/:id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						},
+						"description": "`200 OK` — Found succesfully\n\n`400 Bad Request` — Missing data and wrong validation\n\n`401 Unauthorized` — not login\n\n`403 Forbidden` — not have permission\n\n`404 Not Found` — this user not found in pactda\n\n`500 Internal Server Error` — Internal Server Error"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"JCJ\",\r\n    \"message\": \"I\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/test",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"test"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
