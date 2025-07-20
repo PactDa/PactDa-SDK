@@ -7,14 +7,13 @@ import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
-import { MailService } from '../mail/mail.service';
+import axios from 'axios';
 
 @Injectable()
 export class AuthService {
     constructor(
         @InjectRepository(User) private readonly userRepo: Repository<User>,
         private readonly jwtService: JwtService,
-        private readonly mailService: MailService,
     ) { }
 
     async checkEmail(email: string): Promise<boolean> {
@@ -24,10 +23,14 @@ export class AuthService {
 
     async register(dto: RegisterDto): Promise<User> {
         const exists = await this.userRepo.findOne({ where: { email: dto.email } });
-        if (exists) throw new ConflictException('Email already exists');
+        if (exists) {
+            throw new ConflictException('Email already exists');
+        }
+
         const hashedPassword = await bcrypt.hash(dto.password, 10);
         const newUser = this.userRepo.create({ ...dto, password_hash: hashedPassword });
-        return this.userRepo.save(newUser);
+
+        return await this.userRepo.save(newUser);
     }
 
     async login(dto: LoginDto): Promise<{ accessToken: string } | null> {
@@ -38,6 +41,15 @@ export class AuthService {
         }
         throw new UnauthorizedException('Invalid email or password');
     }
+
+    async me(userId: number) {
+        const user = await this.userRepo.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return user ;
+    }
+
 
     async sendVerificationEmail(userId: number) {
         const user = await this.userRepo.findOne({ where: { id: userId } });
@@ -57,9 +69,11 @@ export class AuthService {
                 expiry,
             },
         };
+        console.log(
+            `[sendVerificationEmail] userId: ${userId} | time: ${new Date().toISOString()} | token: ${token} | expiry: ${expiry.toISOString()}`
+        );
 
         await this.userRepo.save(user);
-        await this.mailService.sendVerificationEmail(user.email, token);
     }
 
 
@@ -90,5 +104,49 @@ export class AuthService {
         await this.userRepo.save(user);
 
         return { message: 'Email verified successfully' };
+    }
+
+    async validateGoogleUser(code: string): Promise<{ accessToken: string }> {
+        if (!code) throw new BadRequestException('Missing authorization code');
+
+        const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', null, {
+            params: {
+                code,
+                client_id: process.env.GOOGLE_CLIENT_ID,
+                client_secret: process.env.GOOGLE_CLIENT_SECRET,
+                redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+                grant_type: 'authorization_code',
+            },
+        });
+
+        const { access_token } = tokenResponse.data;
+
+        const profileResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${access_token}` },
+        });
+
+        const profile = profileResponse.data;
+
+        let user = await this.userRepo.findOne({ where: { email: profile.email } });
+
+        if (!user) {
+            user = this.userRepo.create({
+                username: profile.name || profile.email.split('@')[0],
+                email: profile.email,
+                is_email_verified: profile.verified_email || false,
+                metadata: {
+                    googleId: profile.id,
+                    name: profile.name,
+                    picture: profile.picture,
+                    given_name: profile.given_name,
+                    family_name: profile.family_name,
+                    locale: profile.locale,
+                },
+            });
+            user = await this.userRepo.save(user);
+        }
+
+        const payload = { sub: user.id, email: user.email };
+        return { accessToken: this.jwtService.sign(payload) };
     }
 }
