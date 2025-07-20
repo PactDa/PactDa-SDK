@@ -31,19 +31,14 @@ export class AuthController {
             HttpStatus.NOT_FOUND,
         );
     }
-
     @Post('register')
     async register(@Body() dto: RegisterDto) {
-        try {
-            const result = await this.authService.register(dto);
-            return { statusCode: HttpStatus.CREATED, message: 'User created successfully', data: result };
-        } catch (error) {
-            if (error.code === '23505') {
-                // PostgreSQL duplicate error
-                throw new HttpException({ statusCode: 409, message: 'Email already exists' }, HttpStatus.CONFLICT);
-            }
-            throw new HttpException({ statusCode: 500, message: 'Internal Server Error' }, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        const result = await this.authService.register(dto);
+        return {
+            statusCode: HttpStatus.CREATED,
+            message: 'User created successfully',
+            data: result
+        };
     }
 
     @Post('login')
@@ -58,7 +53,11 @@ export class AuthController {
     @UseGuards(JwtAuthGuard)
     @Get('me')
     async getProfile(@Req() req) {
-        return { statusCode: HttpStatus.OK, data: req.user };
+        const user = await this.authService.me(req.user.id);
+        return {
+            statusCode: HttpStatus.OK,
+            data: user,
+        };
     }
 
     @Post('send_verification_email')
@@ -76,5 +75,11 @@ export class AuthController {
 
         await this.authService.verifyEmail(token);
         return { statusCode: 200, message: 'Email verified successfully' };
+    }
+
+    @Post('google/login')
+    async googleLogin(@Body('code') code: string) {
+        if (!code) throw new BadRequestException('Code is required');
+        return await this.authService.validateGoogleUser(code);
     }
 }

@@ -9,6 +9,7 @@ import { ApiModule } from './api/api.module';
 import { PermissionModule } from './permission/permission.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AppService } from './app.service';
     ApiKeyModule,
     ApiModule,
     PermissionModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],
