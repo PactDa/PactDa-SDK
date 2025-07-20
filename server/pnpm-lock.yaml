@@ -62,7 +62,7 @@ importers:
       passport:
         specifier: ^0.7.0
         version: 0.7.0
-        passport-google-oauth20:
+      passport-google-oauth20:
         specifier: ^2.0.0
         version: 2.0.0
       passport-jwt:
