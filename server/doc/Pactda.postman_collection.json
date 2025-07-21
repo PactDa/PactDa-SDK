@@ -15,7 +15,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/auth/check-email/:email",
+							"raw": "{{base_url}}/api/auth/check-email/poommipat566@gmail.com",
 							"host": [
 								"{{base_url}}"
 							],
@@ -23,13 +23,7 @@
 								"api",
 								"auth",
 								"check-email",
-								":email"
-							],
-							"variable": [
-								{
-									"key": "email",
-									"value": ""
-								}
+								"poommipat566@gmail.com"
 							]
 						},
 						"description": "Check are email are already have\n\n`200 OK` — this email already have in pactda  \n`404 Not Found` — this email not found in pactda\n\n`500 Internal Server Error` —Internal Server ErrorEndFragment"
@@ -46,7 +40,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\" : \"username_example\",\r\n    \"email\" : \"example@gmail.com\",\r\n    \"password\" : \"example_password01\"\r\n}",
+							"raw": "{\r\n    \"username\" : \"Poom\",\r\n    \"email\" : \"poommipat566@gmail.com\",\r\n    \"password\" : \"1105ABC\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -78,7 +72,12 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\" : \"example@gmail.com\",\r\n    \"password\" : \"example_password01\"\r\n}"
+							"raw": "{\r\n    \"email\" : \"poommipat566@gmail.com\",\r\n    \"password\" : \"1105ABC\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/login",
@@ -103,7 +102,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2N2RmOWMwNjc5YmU3ZmFkYTY2MDA1YWYiLCJ1c2VybmFtZSI6IiQyYiQxMCRYcC5Rdy5Bc29lQWRrSEo4c0YyelllN2tKUEszN0o1ZmthdXIzanV3S2ljTktBSFdLTjJMMiIsImlhdCI6MTc0NTUwMjI3OSwiZXhwIjoxNzQ1NTEzMDc5fQ.qDPm2ni_kBgMt1id19DVNhi6oqC7UA7Rv1NaBvi7a6g",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjksImVtYWlsIjoicG9vbW1pcGF0NTY2QGdtYWlsLmNvbSIsImlhdCI6MTc1MzAzMDUwOSwiZXhwIjoxNzUzMDQxMzA5fQ.gAkbJLKhWggrwCWA34i3BlMmqaZxuWyLollnbU4wqzo",
 									"type": "string"
 								}
 							]
@@ -161,7 +160,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/auth/verify-email?token",
+							"raw": "{{base_url}}/api/auth/verify-email?token=a9a8a01e49656fa8e21a95d4cd84661c199ff99a03c938212bce30b1b2ba4e49",
 							"host": [
 								"{{base_url}}"
 							],
@@ -173,7 +172,7 @@
 							"query": [
 								{
 									"key": "token",
-									"value": null
+									"value": "a9a8a01e49656fa8e21a95d4cd84661c199ff99a03c938212bce30b1b2ba4e49"
 								}
 							]
 						},
@@ -358,28 +357,27 @@
 		{
 			"name": "Test",
 			"request": {
-				"method": "POST",
+				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"name\":\"JCJ\",\r\n    \"message\": \"I\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
 				"url": {
-					"raw": "{{base_url}}/test",
+					"raw": "{{base_url}}/api/test",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
+						"api",
 						"test"
 					]
 				}
 			},
 			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "default"
 		}
 	]
 }

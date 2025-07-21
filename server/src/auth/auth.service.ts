@@ -8,12 +8,14 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
 import axios from 'axios';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         @InjectRepository(User) private readonly userRepo: Repository<User>,
         private readonly jwtService: JwtService,
+        private readonly mailService: MailService,
     ) { }
 
     async checkEmail(email: string): Promise<boolean> {
@@ -74,6 +76,7 @@ export class AuthService {
         );
 
         await this.userRepo.save(user);
+        await this.mailService.sendVerificationEmail(user.email, token);
     }
 
 

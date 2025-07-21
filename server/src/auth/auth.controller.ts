@@ -67,7 +67,7 @@ export class AuthController {
         return { statusCode: 200, message: 'Verification email sent successfully' };
     }
 
-    @Post('verify-email')
+    @Get('verify-email')
     async verifyEmail(@Query('token') token: string) {
         if (!token || token.trim() === '') {
             throw new BadRequestException('Missing token');
