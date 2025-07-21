@@ -29,6 +29,16 @@ module pactda::pactda_core {
     const EEscrowNotFound: u64 = 6;
     const EAlreadyFunded: u64 = 7;
     const ENotResolved: u64 = 8;
+    
+    // === Milestone Error Codes ===
+    const EMilestoneNotFound: u64 = 9;
+    const EInvalidMilestone: u64 = 10;
+    const EMilestoneAlreadyCompleted: u64 = 11;
+    const EMilestoneNotApproved: u64 = 12;
+    const EMilestoneAlreadyWithdrawn: u64 = 13;
+    const EInvalidWithdrawalAmount: u64 = 14;
+    const EMilestoneInvalidApprover: u64 = 15;
+    const EMilestoneExceedsBalance: u64 = 16;
 
     // === Status Constants ===
     const CONTRACT_STATUS_DRAFT: u8 = 0;
@@ -42,7 +52,26 @@ module pactda::pactda_core {
     const ESCROW_STATUS_RELEASED: u8 = 2;
     const ESCROW_STATUS_REFUNDED: u8 = 3;
 
+    // === Milestone Status Constants ===
+    const MILESTONE_STATUS_PENDING: u8 = 0;
+    const MILESTONE_STATUS_COMPLETED: u8 = 1;
+    const MILESTONE_STATUS_APPROVED: u8 = 2;
+    const MILESTONE_STATUS_WITHDRAWN: u8 = 3;
+
     // === Core MVP Structs ===
+
+    /// Milestone struct for project-based payments
+    public struct Milestone has store, copy, drop {
+        id: u64,                        // Unique milestone ID within contract
+        withdrawal_amount: u64,         // Amount contractor can withdraw for this milestone
+        approver: address,              // Who can approve this milestone completion
+        status: u8,                     // Current milestone status (pending/completed/approved/withdrawn)
+        metadata: String,               // JSON blob for client-side complex data
+        created_at: u64,                // When milestone was created
+        completed_at: Option<u64>,      // When contractor marked as completed
+        approved_at: Option<u64>,       // When approver approved the work
+        withdrawn_at: Option<u64>,      // When payment was withdrawn
+    }
 
     /// Simplified PactDa Contract - MVP Version
     public struct PactDaContract has key, store {
@@ -57,6 +86,11 @@ module pactda::pactda_core {
         title: String,
         created_at: u64,
         creator: address,
+        
+        // Milestone support fields (minimal approach)
+        milestone_mode: bool,                   // Flag: true for milestone contracts, false for regular
+        milestones: Option<vector<Milestone>>,  // Optional milestone storage (None for regular contracts)
+        next_milestone_id: u64,                 // Auto-incrementing ID counter for unique milestone IDs
     }
 
     /// Simplified Escrow - MVP Version  
@@ -71,6 +105,9 @@ module pactda::pactda_core {
         funded_by: vector<address>,
         funded_amounts: vector<u64>,
         created_at: u64,
+        
+        // Milestone withdrawal tracking (simple total approach)
+        total_milestone_withdrawn: u64,         // Total amount withdrawn via milestones
     }
 
     // === Events ===
@@ -140,6 +177,10 @@ module pactda::pactda_core {
             title,
             created_at: current_time,
             creator: sender,
+            // Initialize milestone fields for regular contract
+            milestone_mode: false,
+            milestones: option::none(),
+            next_milestone_id: 1,
         };
         
         // Create escrow with linked contract ID
@@ -151,6 +192,8 @@ module pactda::pactda_core {
             funded_by: vector::empty(),
             funded_amounts: vector::empty(),
             created_at: current_time,
+            // Initialize milestone tracking
+            total_milestone_withdrawn: 0,
         };
         
         // Emit event
