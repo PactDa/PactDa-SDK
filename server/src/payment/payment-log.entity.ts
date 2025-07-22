@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 
 @Entity('payment_logs')
@@ -34,7 +41,7 @@ export class PaymentLog {
   raw_response: any;
 
   // Relationships
-  @ManyToOne(() => User, user => user.paymentLogs)
+  @ManyToOne(() => User, (user) => user.paymentLogs)
   @JoinColumn({ name: 'user_id' })
   user: User;
-} 
+}

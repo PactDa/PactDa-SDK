@@ -8,4 +8,4 @@ import { Api } from './api.entity';
   providers: [ApiService],
   exports: [ApiService],
 })
-export class ApiModule {} 
+export class ApiModule {}

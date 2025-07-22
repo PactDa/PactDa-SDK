@@ -8,4 +8,4 @@ import { ApiKey } from './api-key.entity';
   providers: [ApiKeyService],
   exports: [ApiKeyService],
 })
-export class ApiKeyModule {} 
+export class ApiKeyModule {}

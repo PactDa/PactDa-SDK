@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { CreditTransaction } from '../credit/credit-transaction.entity';
 import { ApiLog } from './api-log.entity';
 import { PaymentLog } from '../payment/payment-log.entity';
@@ -23,7 +29,11 @@ export class User {
   @CreateDateColumn({ type: 'timestamptz', nullable: false })
   create_at: Date;
 
-  @Column({ type: 'timestamp', name: 'last_login_at', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({
+    type: 'timestamp',
+    name: 'last_login_at',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   lastLoginAt: Date;
 
   @Column({ type: 'boolean', nullable: false, default: false })
@@ -39,15 +49,18 @@ export class User {
   total_spend: number;
 
   // Relationships
-  @OneToMany(() => CreditTransaction, creditTransaction => creditTransaction.user)
+  @OneToMany(
+    () => CreditTransaction,
+    (creditTransaction) => creditTransaction.user,
+  )
   creditTransactions: CreditTransaction[];
 
-  @OneToMany(() => ApiLog, apiLog => apiLog.user)
+  @OneToMany(() => ApiLog, (apiLog) => apiLog.user)
   apiLogs: ApiLog[];
 
-  @OneToMany(() => PaymentLog, paymentLog => paymentLog.user)
+  @OneToMany(() => PaymentLog, (paymentLog) => paymentLog.user)
   paymentLogs: PaymentLog[];
 
-  @OneToMany(() => ApiKey, apiKey => apiKey.user)
+  @OneToMany(() => ApiKey, (apiKey) => apiKey.user)
   apiKeys: ApiKey[];
-} 
+}

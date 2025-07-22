@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 import { ApiKeyPermission } from '../permission/api-key-permission.entity';
 
@@ -26,10 +34,13 @@ export class ApiKey {
   revoked: boolean;
 
   // Relationships
-  @ManyToOne(() => User, user => user.apiKeys)
+  @ManyToOne(() => User, (user) => user.apiKeys)
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToMany(() => ApiKeyPermission, apiKeyPermission => apiKeyPermission.apiKey)
+  @OneToMany(
+    () => ApiKeyPermission,
+    (apiKeyPermission) => apiKeyPermission.apiKey,
+  )
   apiKeyPermissions: ApiKeyPermission[];
-} 
+}
