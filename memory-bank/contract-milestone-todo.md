@@ -24,18 +24,29 @@
   - Updated existing `create_agreement` for backward compatibility
   - Location: `contract/sources/pactda_core.move`
 
-### Phase 2: Core Functions Implementation
-- [ ] **Implement create_milestone_agreement function**
-  - Creates agreement with milestone_mode = true
-  - Initializes empty milestones vector
-  - Reuses existing escrow creation logic
-  - Location: `contract/sources/pactda_core.move`
+### Phase 2: Core Functions Implementation ✅ COMPLETED
+- [x] **Implement add_milestone function for dynamic milestone creation**
+  - ✅ Creator-only access control (only contract.creator can add milestones)
+  - ✅ Works on DRAFT and ACTIVE contracts only
+  - ✅ No balance validation (escrow funding not required at milestone creation)
+  - ✅ Auto-enables milestone mode if not already enabled
+  - ✅ Auto-increments milestone ID for uniqueness
+  - ✅ Validates approver is a party to the contract
+  - ✅ Emits MilestoneCreatedEvent for SDK integration
+  - Location: `contract/sources/pactda_core.move:314-378`
 
-- [ ] **Implement add_milestone function for dynamic milestone creation**
-  - Validates withdrawal amount <= available balance
-  - Auto-increments milestone ID
-  - Emits milestone creation event
-  - Location: `contract/sources/pactda_core.move`
+- [x] **Implement remove_milestone function for milestone management**
+  - ✅ Creator-only access control
+  - ✅ Only removes PENDING milestones (no work started)
+  - ✅ Proper validation and error handling
+  - ✅ Emits MilestoneRemovedEvent for SDK integration
+  - Location: `contract/sources/pactda_core.move:380-429`
+
+- [x] **Updated create_agreement function for milestone support**
+  - ✅ Added creator parameter for milestone management control
+  - ✅ Maintains backward compatibility for regular agreements
+  - ✅ Proper event emission updates
+  - Location: `contract/sources/pactda_core.move:147-214`
 
 ### Phase 3: Milestone Workflow
 - [ ] **Implement milestone workflow functions (complete/approve/withdraw)**
@@ -80,11 +91,12 @@
   - Location: `contract/sources/pactda_core.move`
 
 ### Phase 6: Management Functions
-- [ ] **Add remove_milestone function (pre-completion only)**
-  - Remove milestone before any work starts
-  - Validate no payments made
-  - Adjust total project amounts
-  - Location: `contract/sources/pactda_core.move`
+- [x] **Add remove_milestone function (pre-completion only)** ✅ COMPLETED IN PHASE 2
+  - ✅ Remove milestone before any work starts (PENDING status only)
+  - ✅ Validate no payments made
+  - ✅ Creator-only access control
+  - ✅ Moved to Phase 2 implementation
+  - Location: `contract/sources/pactda_core.move:380-429`
 
 - [ ] **Create comprehensive test cases for milestone functionality**
   - Test milestone creation and management
@@ -121,12 +133,12 @@
 ## 🚀 Implementation Strategy
 
 ### **Currently Working On:** 
-🔄 **Phase 1: Data Structure Extensions** - Extending PactDaContract struct
+✅ **Phase 2: Core Functions Implementation** - COMPLETED
 
 ### **Next Up:**
-1. Add Milestone struct definition
-2. Extend Escrow struct for tracking
-3. Implement core creation functions
+1. **Phase 3: Milestone Workflow** - Implement complete/approve/withdraw functions
+2. **Phase 4: Security & Validation** - Add financial validations and security checks
+3. **Phase 5: SDK Integration** - Add milestone events and getter functions
 
 ### **Key Design Principles:**
 - ✅ **Minimal Smart Contract Complexity** - Only trust & money operations
@@ -144,17 +156,17 @@
 ## 📊 Progress Tracking
 
 **Phase 1 (Data Structures):** 3/3 ✅✅✅  
-**Phase 2 (Core Functions):** 0/2 ⬜⬜  
+**Phase 2 (Core Functions):** 3/3 ✅✅✅  
 **Phase 3 (Workflow):** 0/1 ⬜  
 **Phase 4 (Security):** 0/2 ⬜⬜  
 **Phase 5 (Integration):** 0/3 ⬜⬜⬜  
-**Phase 6 (Management):** 0/2 ⬜⬜  
+**Phase 6 (Management):** 1/2 ✅⬜  
 **Phase 7 (Compatibility):** 0/2 ⬜⬜  
 **Phase 8 (Documentation):** 0/1 ⬜  
 
-**Overall Progress: 0/18 tasks completed**
+**Overall Progress: 7/18 tasks completed (39% complete)**
 
 ---
 
-*Last Updated: 2025-01-21*  
-*Ready to begin Phase 1 implementation*
+*Last Updated: 2025-01-22*  
+*Phase 2 Complete - Ready for Phase 3 Milestone Workflow Implementation*

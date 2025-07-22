@@ -149,10 +149,10 @@ module pactda::pactda_core {
         parties: vector<address>,
         resolver: ProgrammaticResolver,
         title: String,
+        creator: address,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        let sender = tx_context::sender(ctx);
         let current_time = sui::clock::timestamp_ms(clock);
         
         // Validate input
@@ -176,7 +176,7 @@ module pactda::pactda_core {
             resolution_policy_id: resolver_id,
             title,
             created_at: current_time,
-            creator: sender,
+            creator: creator,
             // Initialize milestone fields for regular contract
             milestone_mode: false,
             milestones: option::none(),
@@ -202,7 +202,7 @@ module pactda::pactda_core {
             escrow_id,
             resolution_policy_id: resolver_id,
             parties: contract.parties,
-            creator: sender,
+            creator: creator,
             title,
             timestamp: current_time,
         });
@@ -309,6 +309,143 @@ module pactda::pactda_core {
         
         // Transfer payout to winner
         transfer::public_transfer(payout, winner);
+    }
+
+    /// Add milestone to existing agreement - Phase 2 Implementation
+    /// AIDEV-NOTE: Only creator can add milestones, works on DRAFT/ACTIVE contracts, no balance validation needed
+    public entry fun add_milestone(
+        contract: &mut PactDaContract,
+        withdrawal_amount: u64,
+        approver: address,
+        metadata: String,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let sender = tx_context::sender(ctx);
+        let current_time = sui::clock::timestamp_ms(clock);
+        
+        // Validate only creator can add milestones
+        assert!(sender == contract.creator, EUnauthorized);
+        
+        // Validate contract status - only DRAFT and ACTIVE allowed
+        assert!(
+            contract.status == CONTRACT_STATUS_DRAFT || contract.status == CONTRACT_STATUS_ACTIVE,
+            EInvalidStatus
+        );
+        
+        // Validate approver is a party to the contract
+        assert!(vector::contains(&contract.parties, &approver), EMilestoneInvalidApprover);
+        
+        // Validate withdrawal amount
+        assert!(withdrawal_amount > 0, EInvalidWithdrawalAmount);
+        
+        // Enable milestone mode if not already enabled
+        if (!contract.milestone_mode) {
+            contract.milestone_mode = true;
+            contract.milestones = option::some(vector::empty<Milestone>());
+        };
+        
+        // Get current milestone ID and auto-increment
+        let milestone_id = contract.next_milestone_id;
+        contract.next_milestone_id = milestone_id + 1;
+        
+        // Create new milestone
+        let milestone = Milestone {
+            id: milestone_id,
+            withdrawal_amount,
+            approver,
+            status: MILESTONE_STATUS_PENDING,
+            metadata,
+            created_at: current_time,
+            completed_at: option::none(),
+            approved_at: option::none(),
+            withdrawn_at: option::none(),
+        };
+        
+        // Add milestone to contract
+        let milestones_ref = option::borrow_mut(&mut contract.milestones);
+        vector::push_back(milestones_ref, milestone);
+        
+        // Emit milestone creation event
+        event::emit(MilestoneCreatedEvent {
+            contract_id: object::id(contract),
+            milestone_id,
+            withdrawal_amount,
+            approver,
+            creator: sender,
+            timestamp: current_time,
+        });
+    }
+
+    /// Remove milestone from agreement - Phase 2 Implementation  
+    /// AIDEV-NOTE: Only creator can remove, only pending milestones can be removed
+    public entry fun remove_milestone(
+        contract: &mut PactDaContract,
+        milestone_id: u64,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let sender = tx_context::sender(ctx);
+        let current_time = sui::clock::timestamp_ms(clock);
+        
+        // Validate only creator can remove milestones
+        assert!(sender == contract.creator, EUnauthorized);
+        
+        // Validate contract has milestone mode enabled
+        assert!(contract.milestone_mode, EInvalidMilestone);
+        assert!(option::is_some(&contract.milestones), EInvalidMilestone);
+        
+        let milestones_ref = option::borrow_mut(&mut contract.milestones);
+        let milestone_count = vector::length(milestones_ref);
+        let mut found_index: Option<u64> = option::none();
+        
+        // Find milestone by ID
+        let mut i = 0;
+        while (i < milestone_count) {
+            let milestone = vector::borrow(milestones_ref, i);
+            if (milestone.id == milestone_id) {
+                // Validate milestone is still pending (no work done yet)
+                assert!(milestone.status == MILESTONE_STATUS_PENDING, EMilestoneAlreadyCompleted);
+                found_index = option::some(i);
+                break
+            };
+            i = i + 1;
+        };
+        
+        // Validate milestone was found
+        assert!(option::is_some(&found_index), EMilestoneNotFound);
+        let index = *option::borrow(&found_index);
+        
+        // Remove milestone from vector
+        vector::remove(milestones_ref, index);
+        
+        // Emit milestone removal event
+        event::emit(MilestoneRemovedEvent {
+            contract_id: object::id(contract),
+            milestone_id,
+            creator: sender,
+            timestamp: current_time,
+        });
+    }
+
+    // === Events for Milestone Functionality ===
+
+    /// Milestone Created Event
+    public struct MilestoneCreatedEvent has copy, drop {
+        contract_id: ID,
+        milestone_id: u64,
+        withdrawal_amount: u64,
+        approver: address,
+        creator: address,
+        timestamp: u64,
+    }
+
+    /// Milestone Removed Event
+    public struct MilestoneRemovedEvent has copy, drop {
+        contract_id: ID,
+        milestone_id: u64,
+        creator: address,
+        timestamp: u64,
     }
 
     // === Getter Functions for SDK/API ===

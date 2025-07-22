@@ -66,15 +66,22 @@ public struct Escrow has key, store {
 
 ## Core Smart Contract Functions (Minimal Set)
 
-### 1. Contract Creation
-- `create_agreement()` - existing function (regular contracts)
-- `create_milestone_agreement()` - new function (milestone contracts)
-- Both use same escrow system
+### 1. Contract Creation ✅ IMPLEMENTED
+- `create_agreement(parties, resolver, title, creator, clock, ctx)` - ✅ Updated with creator parameter
+- **ARCHITECTURAL DECISION**: No separate `create_milestone_agreement()` function
+- **APPROACH**: Any existing agreement can become milestone-based by adding milestones
+- Both regular and milestone contracts use same escrow system
 
-### 2. Milestone Management
-- `add_milestone(contract, withdrawal_amount, approver, metadata)` - add milestone
-- `update_milestone_metadata(contract, milestone_id, metadata)` - client updates only
-- `remove_milestone(contract, milestone_id)` - before completion only
+### 2. Milestone Management ✅ IMPLEMENTED
+- `add_milestone(contract, withdrawal_amount, approver, metadata, clock, ctx)` - ✅ IMPLEMENTED
+  - Creator-only access control
+  - Works on DRAFT/ACTIVE contracts only
+  - Auto-enables milestone mode if needed
+  - No balance validation at creation (flexible funding)
+- `remove_milestone(contract, milestone_id, clock, ctx)` - ✅ IMPLEMENTED
+  - Creator-only access control  
+  - PENDING milestones only (no work started)
+- `update_milestone_metadata(contract, milestone_id, metadata)` - planned for Phase 5
 
 ### 3. Milestone Workflow (Core Trust Operations)
 - `complete_milestone(contract, milestone_id)` - contractor marks work done
