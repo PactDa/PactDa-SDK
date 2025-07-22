@@ -11,16 +11,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
         transport: {
-          host: 'smtp.gmail.com',
-          port: 465,
+          host: config.get<string>('MAIL_HOST'),
+          port: config.get<string>('MAIL_PORT'),
           secure: true,
           auth: {
-            user: config.get<string>('EMAIL_USER'),
-            pass: config.get<string>('EMAIL_PASS'),
+            user: config.get<string>('MAIL_USER'),
+            pass: config.get<string>('MAIL_PASS'),
           },
         },
         defaults: {
-          from: `"Pactda Support" <${config.get<string>('EMAIL_USER')}>`,
+          from: `"Pactda Support" <${config.get<string>('MAIL_USER')}>`,
         },
       }),
     }),

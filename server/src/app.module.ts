@@ -19,6 +19,7 @@ import {
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env',
       validate: validateEnvironment,
     }),
     TypeOrmModule.forRootAsync({
