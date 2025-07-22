@@ -62,7 +62,7 @@ export class AuthService {
         }
 
         const token = randomBytes(32).toString('hex');
-        const expiry = new Date(Date.now() + 15 * 60 * 1000);
+        const expiry = new Date(Date.now() + 15 * 60 * 1000); // Token will expire in the next 15 minutes
 
         user.metadata = {
             ...user.metadata,
@@ -71,9 +71,6 @@ export class AuthService {
                 expiry,
             },
         };
-        console.log(
-            `[sendVerificationEmail] userId: ${userId} | time: ${new Date().toISOString()} | token: ${token} | expiry: ${expiry.toISOString()}`
-        );
 
         await this.userRepo.save(user);
         await this.mailService.sendVerificationEmail(user.email, token);
