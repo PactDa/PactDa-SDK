@@ -15,14 +15,14 @@ export class PermissionService {
   async findAll(): Promise<ApiKeyPermission[]> {
     return this.apiKeyPermissionRepository.find({
       relations: ['apiKey', 'api'],
-      order: { id: 'ASC' }
+      order: { id: 'ASC' },
     });
   }
 
   async findOne(id: number): Promise<ApiKeyPermission | null> {
-    return this.apiKeyPermissionRepository.findOne({ 
+    return this.apiKeyPermissionRepository.findOne({
       where: { id },
-      relations: ['apiKey', 'api']
+      relations: ['apiKey', 'api'],
     });
   }
 
@@ -30,7 +30,7 @@ export class PermissionService {
     return this.apiKeyPermissionRepository.find({
       where: { apiKey: { id: apiKeyId } },
       relations: ['apiKey', 'api'],
-      order: { id: 'ASC' }
+      order: { id: 'ASC' },
     });
   }
 
@@ -38,23 +38,31 @@ export class PermissionService {
     return this.apiKeyPermissionRepository.find({
       where: { api: { id: apiId } },
       relations: ['apiKey', 'api'],
-      order: { id: 'ASC' }
+      order: { id: 'ASC' },
     });
   }
 
-  async findByApiKeyAndApi(apiKeyId: number, apiId: number): Promise<ApiKeyPermission | null> {
+  async findByApiKeyAndApi(
+    apiKeyId: number,
+    apiId: number,
+  ): Promise<ApiKeyPermission | null> {
     return this.apiKeyPermissionRepository.findOne({
       where: { apiKey: { id: apiKeyId }, api: { id: apiId } },
-      relations: ['apiKey', 'api']
+      relations: ['apiKey', 'api'],
     });
   }
 
-  async create(permissionData: Partial<ApiKeyPermission>): Promise<ApiKeyPermission> {
+  async create(
+    permissionData: Partial<ApiKeyPermission>,
+  ): Promise<ApiKeyPermission> {
     const permission = this.apiKeyPermissionRepository.create(permissionData);
     return this.apiKeyPermissionRepository.save(permission);
   }
 
-  async update(id: number, permissionData: Partial<ApiKeyPermission>): Promise<ApiKeyPermission | null> {
+  async update(
+    id: number,
+    permissionData: Partial<ApiKeyPermission>,
+  ): Promise<ApiKeyPermission | null> {
     await this.apiKeyPermissionRepository.update(id, permissionData);
     return this.findOne(id);
   }
@@ -66,7 +74,7 @@ export class PermissionService {
   async removeByApiKeyAndApi(apiKeyId: number, apiId: number): Promise<void> {
     await this.apiKeyPermissionRepository.delete({
       apiKey: { id: apiKeyId },
-      api: { id: apiId }
+      api: { id: apiId },
     });
   }
 
@@ -83,7 +91,10 @@ export class PermissionService {
     return this.findByApiId(apiId);
   }
 
-  async grantPermission(apiKeyId: number, apiId: number): Promise<ApiKeyPermission> {
+  async grantPermission(
+    apiKeyId: number,
+    apiId: number,
+  ): Promise<ApiKeyPermission> {
     const existingPermission = await this.findByApiKeyAndApi(apiKeyId, apiId);
     if (existingPermission) {
       return existingPermission;
@@ -97,4 +108,4 @@ export class PermissionService {
   async revokePermission(apiKeyId: number, apiId: number): Promise<void> {
     await this.removeByApiKeyAndApi(apiKeyId, apiId);
   }
-} 
+}

@@ -8,4 +8,4 @@ import { ApiKeyPermission } from './api-key-permission.entity';
   providers: [PermissionService],
   exports: [PermissionService],
 })
-export class PermissionModule {} 
+export class PermissionModule {}

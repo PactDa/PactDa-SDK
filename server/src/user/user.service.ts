@@ -63,9 +63,9 @@ export class UserService {
   }
 
   async getUserApiLogs(userId: number): Promise<ApiLog[]> {
-    return this.apiLogRepository.find({ 
+    return this.apiLogRepository.find({
       where: { user: { id: userId } },
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
-} 
+}

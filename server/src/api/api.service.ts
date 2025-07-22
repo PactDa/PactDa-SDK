@@ -12,7 +12,7 @@ export class ApiService {
 
   async findAll(): Promise<Api[]> {
     return this.apiRepository.find({
-      order: { name: 'ASC' }
+      order: { name: 'ASC' },
     });
   }
 
@@ -23,7 +23,7 @@ export class ApiService {
   async findActive(): Promise<Api[]> {
     return this.apiRepository.find({
       where: { is_active: true },
-      order: { name: 'ASC' }
+      order: { name: 'ASC' },
     });
   }
 
@@ -34,7 +34,7 @@ export class ApiService {
   async findByMethod(method: string): Promise<Api[]> {
     return this.apiRepository.find({
       where: { method },
-      order: { name: 'ASC' }
+      order: { name: 'ASC' },
     });
   }
 
@@ -65,7 +65,7 @@ export class ApiService {
   async findByTags(tags: string): Promise<Api[]> {
     return this.apiRepository.find({
       where: { tags },
-      order: { name: 'ASC' }
+      order: { name: 'ASC' },
     });
   }
-} 
+}

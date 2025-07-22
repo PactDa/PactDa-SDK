@@ -13,14 +13,14 @@ export class PaymentService {
   async findAll(): Promise<PaymentLog[]> {
     return this.paymentLogRepository.find({
       relations: ['user'],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
   async findOne(id: number): Promise<PaymentLog | null> {
-    return this.paymentLogRepository.findOne({ 
+    return this.paymentLogRepository.findOne({
       where: { id },
-      relations: ['user']
+      relations: ['user'],
     });
   }
 
@@ -28,14 +28,16 @@ export class PaymentService {
     return this.paymentLogRepository.find({
       where: { user: { id: userId } },
       relations: ['user'],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
-  async findByProviderTransactionId(providerTransactionId: string): Promise<PaymentLog | null> {
+  async findByProviderTransactionId(
+    providerTransactionId: string,
+  ): Promise<PaymentLog | null> {
     return this.paymentLogRepository.findOne({
       where: { provider_transaction_id: providerTransactionId },
-      relations: ['user']
+      relations: ['user'],
     });
   }
 
@@ -44,7 +46,10 @@ export class PaymentService {
     return this.paymentLogRepository.save(paymentLog);
   }
 
-  async update(id: number, paymentLogData: Partial<PaymentLog>): Promise<PaymentLog | null> {
+  async update(
+    id: number,
+    paymentLogData: Partial<PaymentLog>,
+  ): Promise<PaymentLog | null> {
     await this.paymentLogRepository.update(id, paymentLogData);
     return this.findOne(id);
   }
@@ -57,23 +62,29 @@ export class PaymentService {
     return this.paymentLogRepository.find({
       where: { user: { id: userId } },
       relations: ['user'],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
-  async getPaymentsByStatus(userId: number, status: string): Promise<PaymentLog[]> {
+  async getPaymentsByStatus(
+    userId: number,
+    status: string,
+  ): Promise<PaymentLog[]> {
     return this.paymentLogRepository.find({
       where: { user: { id: userId }, status },
       relations: ['user'],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
-  async getPaymentsByProvider(userId: number, provider: string): Promise<PaymentLog[]> {
+  async getPaymentsByProvider(
+    userId: number,
+    provider: string,
+  ): Promise<PaymentLog[]> {
     return this.paymentLogRepository.find({
       where: { user: { id: userId }, provider },
       relations: ['user'],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
-} 
+}

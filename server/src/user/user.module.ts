@@ -9,4 +9,4 @@ import { ApiLog } from './api-log.entity';
   providers: [UserService],
   exports: [UserService],
 })
-export class UserModule {} 
+export class UserModule {}

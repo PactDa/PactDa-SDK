@@ -13,14 +13,14 @@ export class CreditService {
   async findAll(): Promise<CreditTransaction[]> {
     return this.creditTransactionRepository.find({
       relations: ['user'],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
   async findOne(id: number): Promise<CreditTransaction | null> {
-    return this.creditTransactionRepository.findOne({ 
+    return this.creditTransactionRepository.findOne({
       where: { id },
-      relations: ['user']
+      relations: ['user'],
     });
   }
 
@@ -28,16 +28,23 @@ export class CreditService {
     return this.creditTransactionRepository.find({
       where: { user: { id: userId } },
       relations: ['user'],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
-  async create(creditTransactionData: Partial<CreditTransaction>): Promise<CreditTransaction> {
-    const creditTransaction = this.creditTransactionRepository.create(creditTransactionData);
+  async create(
+    creditTransactionData: Partial<CreditTransaction>,
+  ): Promise<CreditTransaction> {
+    const creditTransaction = this.creditTransactionRepository.create(
+      creditTransactionData,
+    );
     return this.creditTransactionRepository.save(creditTransaction);
   }
 
-  async update(id: number, creditTransactionData: Partial<CreditTransaction>): Promise<CreditTransaction | null> {
+  async update(
+    id: number,
+    creditTransactionData: Partial<CreditTransaction>,
+  ): Promise<CreditTransaction | null> {
     await this.creditTransactionRepository.update(id, creditTransactionData);
     return this.findOne(id);
   }
@@ -50,15 +57,18 @@ export class CreditService {
     return this.creditTransactionRepository.find({
       where: { user: { id: userId } },
       relations: ['user'],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
 
-  async getTransactionsByType(userId: number, type: string): Promise<CreditTransaction[]> {
+  async getTransactionsByType(
+    userId: number,
+    type: string,
+  ): Promise<CreditTransaction[]> {
     return this.creditTransactionRepository.find({
       where: { user: { id: userId }, type },
       relations: ['user'],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
-} 
+}

@@ -13,14 +13,14 @@ export class ApiKeyService {
   async findAll(): Promise<ApiKey[]> {
     return this.apiKeyRepository.find({
       relations: ['user'],
-      order: { create_at: 'DESC' }
+      order: { create_at: 'DESC' },
     });
   }
 
   async findOne(id: number): Promise<ApiKey | null> {
-    return this.apiKeyRepository.findOne({ 
+    return this.apiKeyRepository.findOne({
       where: { id },
-      relations: ['user']
+      relations: ['user'],
     });
   }
 
@@ -28,14 +28,14 @@ export class ApiKeyService {
     return this.apiKeyRepository.find({
       where: { user: { id: userId } },
       relations: ['user'],
-      order: { create_at: 'DESC' }
+      order: { create_at: 'DESC' },
     });
   }
 
   async findByApiKeyHash(apiKeyHash: string): Promise<ApiKey | null> {
     return this.apiKeyRepository.findOne({
       where: { api_key_hash: apiKeyHash },
-      relations: ['user']
+      relations: ['user'],
     });
   }
 
@@ -43,7 +43,7 @@ export class ApiKeyService {
     return this.apiKeyRepository.find({
       where: { user: { id: userId }, revoked: false },
       relations: ['user'],
-      order: { create_at: 'DESC' }
+      order: { create_at: 'DESC' },
     });
   }
 
@@ -52,7 +52,10 @@ export class ApiKeyService {
     return this.apiKeyRepository.save(apiKey);
   }
 
-  async update(id: number, apiKeyData: Partial<ApiKey>): Promise<ApiKey | null> {
+  async update(
+    id: number,
+    apiKeyData: Partial<ApiKey>,
+  ): Promise<ApiKey | null> {
     await this.apiKeyRepository.update(id, apiKeyData);
     return this.findOne(id);
   }
@@ -92,4 +95,4 @@ export class ApiKeyService {
     // This would need to be implemented based on usage tracking
     return true;
   }
-} 
+}
