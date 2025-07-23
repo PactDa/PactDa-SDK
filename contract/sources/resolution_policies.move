@@ -62,7 +62,7 @@ module pactda::resolution_policies {
 
     // === Core Functions ===
 
-    /// Create a new programmatic resolver
+    /// Create a new programmatic resolver (internal function)
     public fun create_resolver(
         authority_address: address,
         clock: &Clock,
@@ -89,6 +89,16 @@ module pactda::resolution_policies {
         });
         
         resolver
+    }
+
+    /// Create resolver and transfer to authority (CLI-callable entry function)
+    public entry fun create_resolver_entry(
+        authority_address: address,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let resolver = create_resolver(authority_address, clock, ctx);
+        transfer::transfer(resolver, authority_address);
     }
 
     /// Report outcome - MVP spec implementation
