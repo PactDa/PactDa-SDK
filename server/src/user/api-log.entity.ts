@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 
 @Entity('api_log')
@@ -22,7 +29,7 @@ export class ApiLog {
   error_code: string;
 
   // Relationships
-  @ManyToOne(() => User, user => user.apiLogs)
+  @ManyToOne(() => User, (user) => user.apiLogs)
   @JoinColumn({ name: 'user_id' })
   user: User;
-} 
+}

@@ -8,4 +8,4 @@ import { PaymentLog } from './payment-log.entity';
   providers: [PaymentService],
   exports: [PaymentService],
 })
-export class PaymentModule {} 
+export class PaymentModule {}

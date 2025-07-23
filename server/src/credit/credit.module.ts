@@ -8,4 +8,4 @@ import { CreditTransaction } from './credit-transaction.entity';
   providers: [CreditService],
   exports: [CreditService],
 })
-export class CreditModule {} 
+export class CreditModule {}

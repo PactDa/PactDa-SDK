@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../user/user.entity';
 
 @Entity('credit_transaction')
@@ -28,7 +35,7 @@ export class CreditTransaction {
   balance_after: number;
 
   // Relationships
-  @ManyToOne(() => User, user => user.creditTransactions)
+  @ManyToOne(() => User, (user) => user.creditTransactions)
   @JoinColumn({ name: 'user_id' })
   user: User;
-} 
+}

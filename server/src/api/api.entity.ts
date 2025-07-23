@@ -25,6 +25,6 @@ export class Api {
   is_active: boolean;
 
   // Relationships
-  @OneToMany(() => ApiKeyPermission, apiKeyPermission => apiKeyPermission.api)
+  @OneToMany(() => ApiKeyPermission, (apiKeyPermission) => apiKeyPermission.api)
   apiKeyPermissions: ApiKeyPermission[];
-} 
+}
