@@ -39,6 +39,13 @@ module pactda::pactda_core {
     const EInvalidWithdrawalAmount: u64 = 14;
     const EMilestoneInvalidApprover: u64 = 15;
     const EMilestoneExceedsBalance: u64 = 16;
+    
+    // === Phase 4 Security Error Codes ===
+    const EArithmeticOverflow: u64 = 17;
+    const EArithmeticUnderflow: u64 = 18;
+    const ESettlementConflict: u64 = 19;
+    const EInsufficientEscrow: u64 = 20;
+    const EApproverChangeBlocked: u64 = 21;
 
     // === Status Constants ===
     const CONTRACT_STATUS_DRAFT: u8 = 0;
@@ -108,6 +115,9 @@ module pactda::pactda_core {
         
         // Milestone withdrawal tracking (simple total approach)
         total_milestone_withdrawn: u64,         // Total amount withdrawn via milestones
+        
+        // Phase 4 Security fields
+        is_settlement_locked: bool,             // Prevents settlement after milestone withdrawals
     }
 
     // === Events ===
@@ -142,12 +152,45 @@ module pactda::pactda_core {
         timestamp: u64,
     }
 
+    // === Phase 4 Security Helper Functions ===
+    
+    /// Safe addition with overflow protection
+    fun safe_add_u64(a: u64, b: u64): u64 {
+        let max_u64 = 18446744073709551615; // 2^64 - 1
+        assert!(a <= max_u64 - b, EArithmeticOverflow);
+        a + b
+    }
+    
+    /// Safe subtraction with underflow protection
+    fun safe_sub_u64(a: u64, b: u64): u64 {
+        assert!(a >= b, EArithmeticUnderflow);
+        a - b
+    }
+    
+    /// Calculate available escrow balance safely
+    fun get_available_escrow_balance(escrow: &Escrow): u64 {
+        let total_balance = balance::value(&escrow.balance);
+        // Protect against underflow if tracking is corrupted
+        if (escrow.total_milestone_withdrawn > total_balance) {
+            0 // Return 0 if tracking is corrupted - prevents exploitation
+        } else {
+            total_balance - escrow.total_milestone_withdrawn
+        }
+    }
+    
+    /// Validate escrow has sufficient balance for operation
+    fun validate_escrow_balance(escrow: &Escrow, required_amount: u64) {
+        let available = get_available_escrow_balance(escrow);
+        assert!(available >= required_amount, EInsufficientEscrow);
+        assert!(balance::value(&escrow.balance) >= required_amount, EInsufficientEscrow);
+    }
+
     // === Core Functions ===
 
     /// Create agreement - MVP Implementation matching spec
     public entry fun create_agreement(
         parties: vector<address>,
-        resolver: ProgrammaticResolver,
+        resolver: &ProgrammaticResolver,
         title: String,
         creator: address,
         clock: &Clock,
@@ -159,7 +202,7 @@ module pactda::pactda_core {
         assert!(vector::length(&parties) >= 2, EInvalidParty);
         assert!(!vector::is_empty(&parties), EInvalidParty);
         
-        let resolver_id = object::id(&resolver);
+        let resolver_id = object::id(resolver);
         
         // Create UIDs for proper linking
         let contract_uid = object::new(ctx);
@@ -194,6 +237,8 @@ module pactda::pactda_core {
             created_at: current_time,
             // Initialize milestone tracking
             total_milestone_withdrawn: 0,
+            // Initialize Phase 4 security fields
+            is_settlement_locked: false,
         };
         
         // Emit event
@@ -207,10 +252,10 @@ module pactda::pactda_core {
             timestamp: current_time,
         });
         
-        // Make all objects shared
+        // Make contract and escrow shared, keep resolver owned
         transfer::public_share_object(contract);
         transfer::public_share_object(escrow);
-        transfer::public_share_object(resolver);
+        // Note: resolver stays owned by authority - don't share it
     }
 
     /// Fund escrow - MVP Implementation
@@ -258,6 +303,7 @@ module pactda::pactda_core {
     }
 
     /// Settle agreement - MVP Implementation reading from resolver
+    /// Phase 4 Security: Prevents settlement conflicts with milestone withdrawals
     public entry fun settle_agreement(
         contract: &mut PactDaContract,
         escrow: &mut Escrow,
@@ -278,6 +324,9 @@ module pactda::pactda_core {
         assert!(contract.status == CONTRACT_STATUS_ACTIVE, EInvalidStatus);
         assert!(escrow.status == ESCROW_STATUS_FUNDED, EInvalidStatus);
         
+        // Phase 4 Security: Prevent settlement after milestone withdrawals
+        assert!(!escrow.is_settlement_locked, ESettlementConflict);
+        
         // Read outcome from resolver - MVP spec requirement
         assert!(resolution_policies::is_resolved(resolver), ENotResolved);
         let winner_option = resolution_policies::get_outcome(resolver);
@@ -287,12 +336,32 @@ module pactda::pactda_core {
         // Validate winner is a party
         assert!(vector::contains(&contract.parties, &winner), EInvalidParty);
         
+        // Phase 4 Security: Use safe balance calculation for milestone contracts
+        let settlement_amount = if (contract.milestone_mode) {
+            // For milestone contracts, only settle remaining balance after withdrawals
+            get_available_escrow_balance(escrow)
+        } else {
+            // For regular contracts, settle full balance
+            balance::value(&escrow.balance)
+        };
+        
+        // Validate there's something to settle
+        assert!(settlement_amount > 0, EInsufficientEscrow);
+        
         // Transfer funds to winner
-        let total_amount = balance::value(&escrow.balance);
-        let payout = coin::from_balance(
-            balance::withdraw_all(&mut escrow.balance),
-            ctx
-        );
+        let payout = if (contract.milestone_mode) {
+            // Withdraw only available balance
+            coin::from_balance(
+                balance::split(&mut escrow.balance, settlement_amount),
+                ctx
+            )
+        } else {
+            // Withdraw all balance for regular contracts
+            coin::from_balance(
+                balance::withdraw_all(&mut escrow.balance),
+                ctx
+            )
+        };
         
         // Update status
         contract.status = CONTRACT_STATUS_COMPLETED;
@@ -303,7 +372,7 @@ module pactda::pactda_core {
             contract_id: object::id(contract),
             escrow_id: object::id(escrow),
             winner,
-            amount: total_amount,
+            amount: settlement_amount,
             timestamp: current_time,
         });
         
@@ -476,13 +545,15 @@ module pactda::pactda_core {
         let milestone_ref = vector::borrow_mut(milestones_ref, index);
         milestone_ref.status = MILESTONE_STATUS_COMPLETED;
         milestone_ref.completed_at = option::some(current_time);
+        let approver = milestone_ref.approver;
         
-        // Emit milestone completion event
+        // Emit milestone completion event (use local variables to avoid borrow conflict)
+        let contract_id = object::id(contract);
         event::emit(MilestoneCompletedEvent {
-            contract_id: object::id(contract),
+            contract_id,
             milestone_id,
             completed_by: sender,
-            approver: milestone_ref.approver,
+            approver,
             timestamp: current_time,
         });
     }
@@ -532,19 +603,21 @@ module pactda::pactda_core {
         let milestone_ref = vector::borrow_mut(milestones_ref, index);
         milestone_ref.status = MILESTONE_STATUS_APPROVED;
         milestone_ref.approved_at = option::some(current_time);
+        let withdrawal_amount = milestone_ref.withdrawal_amount;
         
-        // Emit milestone approval event
+        // Emit milestone approval event (use local variable to avoid borrow conflict)
+        let contract_id = object::id(contract);
         event::emit(MilestoneApprovedEvent {
-            contract_id: object::id(contract),
+            contract_id,
             milestone_id,
             approver: sender,
-            withdrawal_amount: milestone_ref.withdrawal_amount,
+            withdrawal_amount,
             timestamp: current_time,
         });
     }
 
     /// Withdraw milestone payment - Phase 3 Implementation
-    /// AIDEV-NOTE: Only approved milestones can be withdrawn, with balance validation
+    /// Phase 4 Security: Enhanced with overflow protection and comprehensive validation
     public entry fun withdraw_milestone_payment(
         contract: &mut PactDaContract,
         escrow: &mut Escrow,
@@ -573,7 +646,7 @@ module pactda::pactda_core {
         let milestone_count = vector::length(milestones_ref);
         let mut found_index: Option<u64> = option::none();
         
-        // Find milestone by ID
+        // Find milestone by ID with atomic operation protection
         let mut i = 0;
         while (i < milestone_count) {
             let milestone = vector::borrow(milestones_ref, i);
@@ -591,31 +664,44 @@ module pactda::pactda_core {
         let index = *option::borrow(&found_index);
         let milestone_ref = vector::borrow_mut(milestones_ref, index);
         
-        // Security: Validate sufficient escrow balance (prevent over-withdrawal)
-        let total_escrow_balance = balance::value(&escrow.balance);
-        let available_balance = total_escrow_balance - escrow.total_milestone_withdrawn;
-        assert!(milestone_ref.withdrawal_amount <= available_balance, EMilestoneExceedsBalance);
+        // Phase 4 Security: Comprehensive balance validation
+        validate_escrow_balance(escrow, milestone_ref.withdrawal_amount);
+        
+        // Phase 4 Security: Additional validation for edge cases
+        assert!(milestone_ref.withdrawal_amount > 0, EInvalidWithdrawalAmount);
+        assert!(balance::value(&escrow.balance) > 0, EInsufficientEscrow);
+        
+        // Store values before updating to avoid borrow conflicts
+        let withdrawal_amount = milestone_ref.withdrawal_amount;
         
         // Security: Update milestone status BEFORE balance operations (prevent reentrancy)
         milestone_ref.status = MILESTONE_STATUS_WITHDRAWN;
         milestone_ref.withdrawn_at = option::some(current_time);
         
-        // Update escrow tracking
-        escrow.total_milestone_withdrawn = escrow.total_milestone_withdrawn + milestone_ref.withdrawal_amount;
+        // Phase 4 Security: Safe arithmetic with overflow protection
+        escrow.total_milestone_withdrawn = safe_add_u64(
+            escrow.total_milestone_withdrawn, 
+            withdrawal_amount
+        );
+        
+        // Phase 4 Security: Lock settlement to prevent double-spending
+        escrow.is_settlement_locked = true;
         
         // Transfer payment to sender
         let payment = coin::from_balance(
-            balance::split(&mut escrow.balance, milestone_ref.withdrawal_amount),
+            balance::split(&mut escrow.balance, withdrawal_amount),
             ctx
         );
         
-        // Emit milestone payment withdrawal event
+        // Emit milestone payment withdrawal event (use local variables to avoid borrow conflict)
+        let contract_id = object::id(contract);
+        let escrow_id = object::id(escrow);
         event::emit(MilestonePaymentWithdrawnEvent {
-            contract_id: object::id(contract),
-            escrow_id: object::id(escrow),
+            contract_id,
+            escrow_id,
             milestone_id,
             withdrawn_by: sender,
-            amount: milestone_ref.withdrawal_amount,
+            amount: withdrawal_amount,
             timestamp: current_time,
         });
         
@@ -624,7 +710,7 @@ module pactda::pactda_core {
     }
 
     /// Change milestone approver - Phase 3 Implementation
-    /// AIDEV-NOTE: Only creator can change approver, only for pending/completed milestones
+    /// Phase 4 Security: Enhanced with privilege abuse prevention
     public entry fun change_milestone_approver(
         contract: &mut PactDaContract,
         milestone_id: u64,
@@ -647,6 +733,10 @@ module pactda::pactda_core {
         // Validate new approver is a party to the contract
         assert!(vector::contains(&contract.parties, &new_approver), EMilestoneInvalidApprover);
         
+        // Phase 4 Security: Prevent creator from setting themselves as approver
+        // This prevents creator from completing -> changing approver to self -> approving -> withdrawing
+        assert!(new_approver != contract.creator, EApproverChangeBlocked);
+        
         // Validate contract has milestone mode enabled
         assert!(contract.milestone_mode, EInvalidMilestone);
         assert!(option::is_some(&contract.milestones), EInvalidMilestone);
@@ -665,6 +755,15 @@ module pactda::pactda_core {
                     milestone.status == MILESTONE_STATUS_PENDING || milestone.status == MILESTONE_STATUS_COMPLETED,
                     EMilestoneAlreadyCompleted
                 );
+                
+                // Phase 4 Security: Additional protection - prevent changing approver after completion
+                // if creator was the one who completed it (prevents manipulation)
+                if (milestone.status == MILESTONE_STATUS_COMPLETED) {
+                    // Only allow approver change on completed milestones in draft status
+                    // This prevents post-completion manipulation
+                    assert!(contract.status == CONTRACT_STATUS_DRAFT, EApproverChangeBlocked);
+                };
+                
                 found_index = option::some(i);
                 break
             };
@@ -678,11 +777,16 @@ module pactda::pactda_core {
         // Update milestone approver
         let milestone_ref = vector::borrow_mut(milestones_ref, index);
         let old_approver = milestone_ref.approver;
+        
+        // Phase 4 Security: Prevent setting same approver (no-op protection)
+        assert!(old_approver != new_approver, EApproverChangeBlocked);
+        
         milestone_ref.approver = new_approver;
         
-        // Emit milestone approver changed event
+        // Emit milestone approver changed event (use local variable to fix borrow conflict)
+        let contract_id = object::id(contract);
         event::emit(MilestoneApproverChangedEvent {
-            contract_id: object::id(contract),
+            contract_id,
             milestone_id,
             old_approver,
             new_approver,

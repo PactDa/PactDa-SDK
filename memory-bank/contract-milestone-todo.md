@@ -49,13 +49,13 @@
   - Location: `contract/sources/pactda_core.move:147-214`
 
 ### Phase 3: Milestone Workflow
-- [ ] **Implement milestone workflow functions (complete/approve/withdraw)**
+- [x] **Implement milestone workflow functions (complete/approve/withdraw)**
   - `complete_milestone()` - contractor marks work done
   - `approve_milestone()` - approver validates work
   - `withdraw_milestone_payment()` - contractor gets paid
   - Location: `contract/sources/pactda_core.move`
 
-### Phase 4: Security & Validation
+### Phase 4: Security & Validationi
 - [ ] **Add milestone financial validations and security checks**
   - Prevent over-withdrawal
   - Validate approver permissions
