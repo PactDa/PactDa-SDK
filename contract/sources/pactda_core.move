@@ -428,6 +428,269 @@ module pactda::pactda_core {
         });
     }
 
+    /// Complete milestone - Phase 3 Implementation
+    /// AIDEV-NOTE: Only non-approver parties can complete milestones, only on ACTIVE contracts
+    public entry fun complete_milestone(
+        contract: &mut PactDaContract,
+        milestone_id: u64,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let sender = tx_context::sender(ctx);
+        let current_time = sui::clock::timestamp_ms(clock);
+        
+        // Validate contract status - only ACTIVE contracts allowed
+        assert!(contract.status == CONTRACT_STATUS_ACTIVE, EInvalidStatus);
+        
+        // Validate sender is a party to the contract
+        assert!(vector::contains(&contract.parties, &sender), EUnauthorized);
+        
+        // Validate contract has milestone mode enabled
+        assert!(contract.milestone_mode, EInvalidMilestone);
+        assert!(option::is_some(&contract.milestones), EInvalidMilestone);
+        
+        let milestones_ref = option::borrow_mut(&mut contract.milestones);
+        let milestone_count = vector::length(milestones_ref);
+        let mut found_index: Option<u64> = option::none();
+        
+        // Find milestone by ID
+        let mut i = 0;
+        while (i < milestone_count) {
+            let milestone = vector::borrow(milestones_ref, i);
+            if (milestone.id == milestone_id) {
+                // Security: Validate sender is NOT the approver (prevents self-approval setup)
+                assert!(sender != milestone.approver, EUnauthorized);
+                // Validate milestone is in PENDING status (strict progression)
+                assert!(milestone.status == MILESTONE_STATUS_PENDING, EInvalidMilestone);
+                found_index = option::some(i);
+                break
+            };
+            i = i + 1;
+        };
+        
+        // Validate milestone was found
+        assert!(option::is_some(&found_index), EMilestoneNotFound);
+        let index = *option::borrow(&found_index);
+        
+        // Update milestone status and timestamp (atomic update for security)
+        let milestone_ref = vector::borrow_mut(milestones_ref, index);
+        milestone_ref.status = MILESTONE_STATUS_COMPLETED;
+        milestone_ref.completed_at = option::some(current_time);
+        
+        // Emit milestone completion event
+        event::emit(MilestoneCompletedEvent {
+            contract_id: object::id(contract),
+            milestone_id,
+            completed_by: sender,
+            approver: milestone_ref.approver,
+            timestamp: current_time,
+        });
+    }
+
+    /// Approve milestone - Phase 3 Implementation
+    /// AIDEV-NOTE: Only designated approver can approve completed milestones
+    public entry fun approve_milestone(
+        contract: &mut PactDaContract,
+        milestone_id: u64,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let sender = tx_context::sender(ctx);
+        let current_time = sui::clock::timestamp_ms(clock);
+        
+        // Validate contract status - only ACTIVE contracts allowed
+        assert!(contract.status == CONTRACT_STATUS_ACTIVE, EInvalidStatus);
+        
+        // Validate contract has milestone mode enabled
+        assert!(contract.milestone_mode, EInvalidMilestone);
+        assert!(option::is_some(&contract.milestones), EInvalidMilestone);
+        
+        let milestones_ref = option::borrow_mut(&mut contract.milestones);
+        let milestone_count = vector::length(milestones_ref);
+        let mut found_index: Option<u64> = option::none();
+        
+        // Find milestone by ID
+        let mut i = 0;
+        while (i < milestone_count) {
+            let milestone = vector::borrow(milestones_ref, i);
+            if (milestone.id == milestone_id) {
+                // Validate sender is the designated approver
+                assert!(sender == milestone.approver, EUnauthorized);
+                // Validate milestone is in COMPLETED status (strict progression)
+                assert!(milestone.status == MILESTONE_STATUS_COMPLETED, EInvalidMilestone);
+                found_index = option::some(i);
+                break
+            };
+            i = i + 1;
+        };
+        
+        // Validate milestone was found
+        assert!(option::is_some(&found_index), EMilestoneNotFound);
+        let index = *option::borrow(&found_index);
+        
+        // Update milestone status and timestamp (atomic update for security)
+        let milestone_ref = vector::borrow_mut(milestones_ref, index);
+        milestone_ref.status = MILESTONE_STATUS_APPROVED;
+        milestone_ref.approved_at = option::some(current_time);
+        
+        // Emit milestone approval event
+        event::emit(MilestoneApprovedEvent {
+            contract_id: object::id(contract),
+            milestone_id,
+            approver: sender,
+            withdrawal_amount: milestone_ref.withdrawal_amount,
+            timestamp: current_time,
+        });
+    }
+
+    /// Withdraw milestone payment - Phase 3 Implementation
+    /// AIDEV-NOTE: Only approved milestones can be withdrawn, with balance validation
+    public entry fun withdraw_milestone_payment(
+        contract: &mut PactDaContract,
+        escrow: &mut Escrow,
+        milestone_id: u64,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let sender = tx_context::sender(ctx);
+        let current_time = sui::clock::timestamp_ms(clock);
+        
+        // Validate contract status - only ACTIVE contracts allowed
+        assert!(contract.status == CONTRACT_STATUS_ACTIVE, EInvalidStatus);
+        
+        // Validate escrow belongs to contract
+        assert!(escrow.contract_id == object::id(contract), EEscrowNotFound);
+        assert!(contract.escrow_id == object::id(escrow), EEscrowNotFound);
+        
+        // Validate sender is a party to the contract
+        assert!(vector::contains(&contract.parties, &sender), EUnauthorized);
+        
+        // Validate contract has milestone mode enabled
+        assert!(contract.milestone_mode, EInvalidMilestone);
+        assert!(option::is_some(&contract.milestones), EInvalidMilestone);
+        
+        let milestones_ref = option::borrow_mut(&mut contract.milestones);
+        let milestone_count = vector::length(milestones_ref);
+        let mut found_index: Option<u64> = option::none();
+        
+        // Find milestone by ID
+        let mut i = 0;
+        while (i < milestone_count) {
+            let milestone = vector::borrow(milestones_ref, i);
+            if (milestone.id == milestone_id) {
+                // Validate milestone is in APPROVED status (strict progression)
+                assert!(milestone.status == MILESTONE_STATUS_APPROVED, EMilestoneNotApproved);
+                found_index = option::some(i);
+                break
+            };
+            i = i + 1;
+        };
+        
+        // Validate milestone was found
+        assert!(option::is_some(&found_index), EMilestoneNotFound);
+        let index = *option::borrow(&found_index);
+        let milestone_ref = vector::borrow_mut(milestones_ref, index);
+        
+        // Security: Validate sufficient escrow balance (prevent over-withdrawal)
+        let total_escrow_balance = balance::value(&escrow.balance);
+        let available_balance = total_escrow_balance - escrow.total_milestone_withdrawn;
+        assert!(milestone_ref.withdrawal_amount <= available_balance, EMilestoneExceedsBalance);
+        
+        // Security: Update milestone status BEFORE balance operations (prevent reentrancy)
+        milestone_ref.status = MILESTONE_STATUS_WITHDRAWN;
+        milestone_ref.withdrawn_at = option::some(current_time);
+        
+        // Update escrow tracking
+        escrow.total_milestone_withdrawn = escrow.total_milestone_withdrawn + milestone_ref.withdrawal_amount;
+        
+        // Transfer payment to sender
+        let payment = coin::from_balance(
+            balance::split(&mut escrow.balance, milestone_ref.withdrawal_amount),
+            ctx
+        );
+        
+        // Emit milestone payment withdrawal event
+        event::emit(MilestonePaymentWithdrawnEvent {
+            contract_id: object::id(contract),
+            escrow_id: object::id(escrow),
+            milestone_id,
+            withdrawn_by: sender,
+            amount: milestone_ref.withdrawal_amount,
+            timestamp: current_time,
+        });
+        
+        // Transfer payment to sender
+        transfer::public_transfer(payment, sender);
+    }
+
+    /// Change milestone approver - Phase 3 Implementation
+    /// AIDEV-NOTE: Only creator can change approver, only for pending/completed milestones
+    public entry fun change_milestone_approver(
+        contract: &mut PactDaContract,
+        milestone_id: u64,
+        new_approver: address,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let sender = tx_context::sender(ctx);
+        let current_time = sui::clock::timestamp_ms(clock);
+        
+        // Validate only creator can change approver
+        assert!(sender == contract.creator, EUnauthorized);
+        
+        // Validate contract status - only ACTIVE/DRAFT contracts allowed
+        assert!(
+            contract.status == CONTRACT_STATUS_DRAFT || contract.status == CONTRACT_STATUS_ACTIVE,
+            EInvalidStatus
+        );
+        
+        // Validate new approver is a party to the contract
+        assert!(vector::contains(&contract.parties, &new_approver), EMilestoneInvalidApprover);
+        
+        // Validate contract has milestone mode enabled
+        assert!(contract.milestone_mode, EInvalidMilestone);
+        assert!(option::is_some(&contract.milestones), EInvalidMilestone);
+        
+        let milestones_ref = option::borrow_mut(&mut contract.milestones);
+        let milestone_count = vector::length(milestones_ref);
+        let mut found_index: Option<u64> = option::none();
+        
+        // Find milestone by ID
+        let mut i = 0;
+        while (i < milestone_count) {
+            let milestone = vector::borrow(milestones_ref, i);
+            if (milestone.id == milestone_id) {
+                // Validate milestone is not yet approved/withdrawn (can't change after approval)
+                assert!(
+                    milestone.status == MILESTONE_STATUS_PENDING || milestone.status == MILESTONE_STATUS_COMPLETED,
+                    EMilestoneAlreadyCompleted
+                );
+                found_index = option::some(i);
+                break
+            };
+            i = i + 1;
+        };
+        
+        // Validate milestone was found
+        assert!(option::is_some(&found_index), EMilestoneNotFound);
+        let index = *option::borrow(&found_index);
+        
+        // Update milestone approver
+        let milestone_ref = vector::borrow_mut(milestones_ref, index);
+        let old_approver = milestone_ref.approver;
+        milestone_ref.approver = new_approver;
+        
+        // Emit milestone approver changed event
+        event::emit(MilestoneApproverChangedEvent {
+            contract_id: object::id(contract),
+            milestone_id,
+            old_approver,
+            new_approver,
+            changed_by: sender,
+            timestamp: current_time,
+        });
+    }
+
     // === Events for Milestone Functionality ===
 
     /// Milestone Created Event
@@ -445,6 +708,44 @@ module pactda::pactda_core {
         contract_id: ID,
         milestone_id: u64,
         creator: address,
+        timestamp: u64,
+    }
+
+    /// Milestone Completed Event
+    public struct MilestoneCompletedEvent has copy, drop {
+        contract_id: ID,
+        milestone_id: u64,
+        completed_by: address,
+        approver: address,
+        timestamp: u64,
+    }
+
+    /// Milestone Approved Event
+    public struct MilestoneApprovedEvent has copy, drop {
+        contract_id: ID,
+        milestone_id: u64,
+        approver: address,
+        withdrawal_amount: u64,
+        timestamp: u64,
+    }
+
+    /// Milestone Payment Withdrawn Event
+    public struct MilestonePaymentWithdrawnEvent has copy, drop {
+        contract_id: ID,
+        escrow_id: ID,
+        milestone_id: u64,
+        withdrawn_by: address,
+        amount: u64,
+        timestamp: u64,
+    }
+
+    /// Milestone Approver Changed Event
+    public struct MilestoneApproverChangedEvent has copy, drop {
+        contract_id: ID,
+        milestone_id: u64,
+        old_approver: address,
+        new_approver: address,
+        changed_by: address,
         timestamp: u64,
     }
 
