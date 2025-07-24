@@ -5,70 +5,24 @@ This guide shows how to create and manage PactDa contracts from zero using the S
 ## Prerequisites
 - Sui CLI installed and configured
 - Active wallet with SUI tokens for gas fees
-- Package ID: `0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de`
+- Package ID: `0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db`
 - Clock ID: `0x6` (system object, always the same)
 
 ---
 
-## Step 1: Create a Resolver
+## Step 1: Create Agreement Contract
 
-Before creating any contract, you need a resolver to handle dispute resolution.
-
-### Command:
-```bash
-sui client call \
-    --package 0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de \
-    --module resolution_policies \
-    --function create_resolver_entry \
-    --args YOUR_AUTHORITY_ADDRESS 0x6 \
-    --gas-budget 10000000
-```
-
-### Example:
-```bash
-sui client call \
-    --package 0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de \
-    --module resolution_policies \
-    --function create_resolver_entry \
-    --args 0x07b565b5969a2dbbd09ee259417e688b5b3cdaca2b139acf03d3f8a6af0da681 0x6 \
-    --gas-budget 10000000
-```
-
-### What this does:
-- Creates a `ProgrammaticResolver` object
-- Sets the authority address (who can resolve disputes)
-- Transfers the resolver to the authority address
-- The resolver will be owned by the authority
-
-### Save the Resolver ID:
-After successful execution, find the resolver object ID in the transaction output under `objectChanges`. You'll need this for creating contracts.
-
-Example output to look for:
-```
-"objectChanges": [
-  {
-    "type": "created",
-    "objectId": "0xd545ddb9a62a0fd1f5a3297f9fa84a79714f9e0ef1bfb41a9571a3ef7b3be1f2",
-    "objectType": "0x8cfa...::resolution_policies::ProgrammaticResolver"
-  }
-]
-```
-
----
-
-## Step 2: Create Agreement Contract
-
-Now create your agreement contract using the resolver from Step 1.
+Create your agreement contract. The resolver is automatically created for you.
 
 ### Command Template:
 ```bash
 sui client call \
-    --package 0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de \
+    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
     --module pactda_core \
     --function create_agreement \
     --args \
         "[PARTY1_ADDRESS,PARTY2_ADDRESS]" \
-        RESOLVER_ID \
+        AUTHORITY_ADDRESS \
         "CONTRACT_TITLE" \
         CREATOR_ADDRESS \
         0x6 \
@@ -78,12 +32,12 @@ sui client call \
 ### Complete Example:
 ```bash
 sui client call \
-    --package 0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de \
+    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
     --module pactda_core \
     --function create_agreement \
     --args \
         "[0x6663396a5a0e06b0d6af81f9b63371ec18f104d5a453a0be0e598862e89f7da0,0x07b565b5969a2dbbd09ee259417e688b5b3cdaca2b139acf03d3f8a6af0da681]" \
-        0xd545ddb9a62a0fd1f5a3297f9fa84a79714f9e0ef1bfb41a9571a3ef7b3be1f2 \
+        0x07b565b5969a2dbbd09ee259417e688b5b3cdaca2b139acf03d3f8a6af0da681 \
         "Website Development Project" \
         0x07b565b5969a2dbbd09ee259417e688b5b3cdaca2b139acf03d3f8a6af0da681 \
         0x6 \
@@ -92,26 +46,27 @@ sui client call \
 
 ### Parameters explained:
 - **parties**: Array of participant addresses (contractor, client, etc.)
-- **resolver**: The resolver ID from Step 1
+- **authority_address**: Address that can resolve disputes (receives the auto-created resolver)
 - **title**: Human-readable contract name
 - **creator**: Address of the person creating the contract
 - **clock**: Always `0x6` (system clock object)
 
 ### Save Contract and Escrow IDs:
-The transaction will create two shared objects:
-1. **Contract ID** - for managing the agreement
-2. **Escrow ID** - for holding funds
+The transaction will create:
+1. **Contract ID** - shared object for managing the agreement
+2. **Escrow ID** - shared object for holding funds  
+3. **Resolver** - owned by the authority address (auto-created)
 
 ---
 
-## Step 3: Fund the Escrow (Optional)
+## Step 2: Fund the Escrow (Optional)
 
 Add funds to the contract's escrow account.
 
 ### Command:
 ```bash
 sui client call \
-    --package 0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de \
+    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
     --module pactda_core \
     --function fund_escrow \
     --args CONTRACT_ID ESCROW_ID COIN_OBJECT 0x6 \
@@ -128,14 +83,14 @@ sui client gas
 
 ---
 
-## Step 4: Add Milestones (Optional)
+## Step 3: Add Milestones (Optional)
 
 Create project milestones with specific amounts and approvers.
 
 ### Command:
 ```bash
 sui client call \
-    --package 0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de \
+    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
     --module pactda_core \
     --function add_milestone \
     --args \
@@ -150,7 +105,7 @@ sui client call \
 ### Example (300 SUI milestone):
 ```bash
 sui client call \
-    --package 0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de \
+    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
     --module pactda_core \
     --function add_milestone \
     --args \
@@ -169,7 +124,7 @@ sui client call \
 ### Complete Milestone (Contractor):
 ```bash
 sui client call \
-    --package 0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de \
+    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
     --module pactda_core \
     --function complete_milestone \
     --args CONTRACT_ID MILESTONE_ID 0x6
@@ -178,7 +133,7 @@ sui client call \
 ### Approve Milestone (Client/Approver):
 ```bash
 sui client call \
-    --package 0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de \
+    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
     --module pactda_core \
     --function approve_milestone \
     --args CONTRACT_ID MILESTONE_ID 0x6
@@ -187,7 +142,7 @@ sui client call \
 ### Withdraw Payment (Contractor):
 ```bash
 sui client call \
-    --package 0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de \
+    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
     --module pactda_core \
     --function withdraw_milestone_payment \
     --args CONTRACT_ID ESCROW_ID MILESTONE_ID 0x6
@@ -197,7 +152,7 @@ sui client call \
 
 ## Key Addresses Reference
 
-- **Package ID**: `0x8cfa22f09f096f7678b6419caf0a92dbd35d1371bebc302ace167afdaf2ae9de`
+- **Package ID**: `0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db`
 - **Clock ID**: `0x6` (always the same)
 - **Gas Budget**: `10000000` (10M MIST, adjust if needed)
 
