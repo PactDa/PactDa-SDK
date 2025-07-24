@@ -26,29 +26,23 @@ module pactda::test_pactda_core {
         
         ts::next_tx(&mut scenario, ADMIN);
         {
-            // Create resolver
-            let resolver = resolution_policies::create_resolver(
-                AUTHORITY,
-                &clock,
-                ts::ctx(&mut scenario)
-            );
-            
-            // Create agreement
+            // Create agreement (resolver auto-created)
             pactda_core::create_agreement(
                 parties,
-                resolver,
+                AUTHORITY,
                 string::utf8(b"Rock Paper Scissors Game"),
+                ADMIN,
                 &clock,
                 ts::ctx(&mut scenario)
             );
         };
         
         // Verify contract was created
-        ts::next_tx(&mut scenario, ADMIN);
+        ts::next_tx(&mut scenario, AUTHORITY);
         {
             let contract = ts::take_shared<PactDaContract>(&scenario);
             let escrow = ts::take_shared<Escrow>(&scenario);
-            let resolver = ts::take_shared<ProgrammaticResolver>(&scenario);
+            let resolver = ts::take_from_sender<ProgrammaticResolver>(&scenario);
             
             let (contract_parties, status, escrow_id, resolver_id, title) = 
                 pactda_core::get_contract_details(&contract);
@@ -61,7 +55,7 @@ module pactda::test_pactda_core {
             
             ts::return_shared(contract);
             ts::return_shared(escrow);
-            ts::return_shared(resolver);
+            ts::return_to_sender(&scenario, resolver);
         };
         
         clock::destroy_for_testing(clock);
@@ -76,17 +70,12 @@ module pactda::test_pactda_core {
         
         ts::next_tx(&mut scenario, ADMIN);
         {
-            let resolver = resolution_policies::create_resolver(
-                AUTHORITY,
-                &clock,
-                ts::ctx(&mut scenario)
-            );
-            
             // Should fail with empty parties
             pactda_core::create_agreement(
                 vector::empty(),
-                resolver,
+                AUTHORITY,
                 string::utf8(b"Invalid Game"),
+                ADMIN,
                 &clock,
                 ts::ctx(&mut scenario)
             );
@@ -106,16 +95,11 @@ module pactda::test_pactda_core {
         
         ts::next_tx(&mut scenario, ADMIN);
         {
-            let resolver = resolution_policies::create_resolver(
-                AUTHORITY,
-                &clock,
-                ts::ctx(&mut scenario)
-            );
-            
             pactda_core::create_agreement(
                 parties,
-                resolver,
+                AUTHORITY,
                 string::utf8(b"Wager Game"),
+                ADMIN,
                 &clock,
                 ts::ctx(&mut scenario)
             );
@@ -163,16 +147,11 @@ module pactda::test_pactda_core {
         // Create agreement
         ts::next_tx(&mut scenario, ADMIN);
         {
-            let resolver = resolution_policies::create_resolver(
-                AUTHORITY,
-                &clock,
-                ts::ctx(&mut scenario)
-            );
-            
             pactda_core::create_agreement(
                 vector[PLAYER_A, PLAYER_B],
-                resolver,
+                AUTHORITY,
                 string::utf8(b"Game"),
+                ADMIN,
                 &clock,
                 ts::ctx(&mut scenario)
             );
@@ -210,16 +189,11 @@ module pactda::test_pactda_core {
         // 1. Create agreement
         ts::next_tx(&mut scenario, ADMIN);
         {
-            let resolver = resolution_policies::create_resolver(
-                AUTHORITY,
-                &clock,
-                ts::ctx(&mut scenario)
-            );
-            
             pactda_core::create_agreement(
                 vector[PLAYER_A, PLAYER_B],
-                resolver,
+                AUTHORITY,
                 string::utf8(b"Rock Paper Scissors"),
+                ADMIN,
                 &clock,
                 ts::ctx(&mut scenario)
             );
@@ -253,7 +227,7 @@ module pactda::test_pactda_core {
         // 3. Authority reports outcome
         ts::next_tx(&mut scenario, AUTHORITY);
         {
-            let mut resolver = ts::take_shared<ProgrammaticResolver>(&scenario);
+            let mut resolver = ts::take_from_sender<ProgrammaticResolver>(&scenario);
             
             resolution_policies::report_outcome(
                 &mut resolver,
@@ -262,7 +236,7 @@ module pactda::test_pactda_core {
                 ts::ctx(&mut scenario)
             );
             
-            ts::return_shared(resolver);
+            ts::return_to_sender(&scenario, resolver);
         };
         
         // 4. Settle agreement
@@ -270,7 +244,7 @@ module pactda::test_pactda_core {
         {
             let mut contract = ts::take_shared<PactDaContract>(&scenario);
             let mut escrow = ts::take_shared<Escrow>(&scenario);
-            let resolver = ts::take_shared<ProgrammaticResolver>(&scenario);
+            let resolver = ts::take_from_sender<ProgrammaticResolver>(&scenario);
             
             pactda_core::settle_agreement(
                 &mut contract,
@@ -290,7 +264,7 @@ module pactda::test_pactda_core {
             
             ts::return_shared(contract);
             ts::return_shared(escrow);
-            ts::return_shared(resolver);
+            ts::return_to_sender(&scenario, resolver);
         };
         
         // 5. Verify Player A received the payout
@@ -314,16 +288,11 @@ module pactda::test_pactda_core {
         // Create and fund agreement
         ts::next_tx(&mut scenario, ADMIN);
         {
-            let resolver = resolution_policies::create_resolver(
-                AUTHORITY,
-                &clock,
-                ts::ctx(&mut scenario)
-            );
-            
             pactda_core::create_agreement(
                 vector[PLAYER_A, PLAYER_B],
-                resolver,
+                AUTHORITY,
                 string::utf8(b"Game"),
+                ADMIN,
                 &clock,
                 ts::ctx(&mut scenario)
             );
@@ -346,7 +315,7 @@ module pactda::test_pactda_core {
         {
             let mut contract = ts::take_shared<PactDaContract>(&scenario);
             let mut escrow = ts::take_shared<Escrow>(&scenario);
-            let resolver = ts::take_shared<ProgrammaticResolver>(&scenario);
+            let resolver = ts::take_from_sender<ProgrammaticResolver>(&scenario);
             
             pactda_core::settle_agreement(
                 &mut contract,
@@ -358,7 +327,7 @@ module pactda::test_pactda_core {
             
             ts::return_shared(contract);
             ts::return_shared(escrow);
-            ts::return_shared(resolver);
+            ts::return_to_sender(&scenario, resolver);
         };
         
         clock::destroy_for_testing(clock);
@@ -374,16 +343,11 @@ module pactda::test_pactda_core {
         // Create and complete full agreement flow to COMPLETED status
         ts::next_tx(&mut scenario, ADMIN);
         {
-            let resolver = resolution_policies::create_resolver(
-                AUTHORITY,
-                &clock,
-                ts::ctx(&mut scenario)
-            );
-            
             pactda_core::create_agreement(
                 vector[PLAYER_A, PLAYER_B],
-                resolver,
+                AUTHORITY,
                 string::utf8(b"Game"),
+                ADMIN,
                 &clock,
                 ts::ctx(&mut scenario)
             );
@@ -405,7 +369,7 @@ module pactda::test_pactda_core {
         // Report outcome
         ts::next_tx(&mut scenario, AUTHORITY);
         {
-            let mut resolver = ts::take_shared<ProgrammaticResolver>(&scenario);
+            let mut resolver = ts::take_from_sender<ProgrammaticResolver>(&scenario);
             
             resolution_policies::report_outcome(
                 &mut resolver,
@@ -414,7 +378,7 @@ module pactda::test_pactda_core {
                 ts::ctx(&mut scenario)
             );
             
-            ts::return_shared(resolver);
+            ts::return_to_sender(&scenario, resolver);
         };
         
         // Settle agreement to COMPLETED status
@@ -422,13 +386,13 @@ module pactda::test_pactda_core {
         {
             let mut contract = ts::take_shared<PactDaContract>(&scenario);
             let mut escrow = ts::take_shared<Escrow>(&scenario);
-            let resolver = ts::take_shared<ProgrammaticResolver>(&scenario);
+            let resolver = ts::take_from_sender<ProgrammaticResolver>(&scenario);
             
             pactda_core::settle_agreement(&mut contract, &mut escrow, &resolver, &clock, ts::ctx(&mut scenario));
             
             ts::return_shared(contract);
             ts::return_shared(escrow);
-            ts::return_shared(resolver);
+            ts::return_to_sender(&scenario, resolver);
         };
         
         // Try to fund after completion - should fail as status is now COMPLETED

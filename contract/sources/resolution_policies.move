@@ -32,11 +32,9 @@ module pactda::resolution_policies {
     /// ProgrammaticResolver Object - MVP Implementation
     public struct ProgrammaticResolver has key, store {
         id: UID,
-        // Core fields as specified in MVP
         authority_address: address,
         outcome: Option<address>, // MVP spec: Option<address> (the declared winner)
         
-        // Additional essential fields
         created_at: u64,
         resolved_at: Option<u64>,
         resolution_data: String,
@@ -81,7 +79,6 @@ module pactda::resolution_policies {
         
         let resolver_id = object::id(&resolver);
         
-        // Emit event
         event::emit(ResolverCreatedEvent {
             resolver_id,
             authority_address,
@@ -91,7 +88,8 @@ module pactda::resolution_policies {
         resolver
     }
 
-    /// Create resolver and transfer to authority (CLI-callable entry function)
+    /// Create resolver and transfer to authority
+    /// AIDEV-NOTE: This function is deprecated as create_agreement now auto-creates resolvers
     public entry fun create_resolver_entry(
         authority_address: address,
         clock: &Clock,
@@ -100,8 +98,9 @@ module pactda::resolution_policies {
         let resolver = create_resolver(authority_address, clock, ctx);
         transfer::transfer(resolver, authority_address);
     }
+    */
 
-    /// Report outcome - MVP spec implementation
+    /// Report outcome 
     public entry fun report_outcome(
         resolver: &mut ProgrammaticResolver,
         winner_address: address,
@@ -111,17 +110,13 @@ module pactda::resolution_policies {
         let sender = tx_context::sender(ctx);
         let current_time = sui::clock::timestamp_ms(clock);
         
-        // Critical security check - MVP spec requirement
         assert!(sender == resolver.authority_address, EUnauthorized);
         
-        // Validate outcome hasn't been set yet
         assert!(option::is_none(&resolver.outcome), EAlreadyResolved);
         
-        // Set the outcome - MVP spec: sets outcome field to winner_address
         resolver.outcome = option::some(winner_address);
         resolver.resolved_at = option::some(current_time);
         
-        // Emit event
         event::emit(OutcomeReportedEvent {
             resolver_id: object::id(resolver),
             authority_address: sender,
