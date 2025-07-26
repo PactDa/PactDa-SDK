@@ -1,14 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { ApiKey } from './api-key.entity';
+import { CreateApiKeyDto } from './dto/create-api-key.dto';
+import * as bcrypt from 'bcrypt';
+import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
+import { User } from 'src/user/user.entity';
+
+
 
 @Injectable()
 export class ApiKeyService {
   constructor(
     @InjectRepository(ApiKey)
     private apiKeyRepository: Repository<ApiKey>,
-  ) {}
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) { }
 
   async findAll(): Promise<ApiKey[]> {
     return this.apiKeyRepository.find({
@@ -27,7 +35,6 @@ export class ApiKeyService {
   async findByUserId(userId: number): Promise<ApiKey[]> {
     return this.apiKeyRepository.find({
       where: { user: { id: userId } },
-      relations: ['user'],
       order: { create_at: 'DESC' },
     });
   }
@@ -47,9 +54,54 @@ export class ApiKeyService {
     });
   }
 
-  async create(apiKeyData: Partial<ApiKey>): Promise<ApiKey> {
-    const apiKey = this.apiKeyRepository.create(apiKeyData);
-    return this.apiKeyRepository.save(apiKey);
+  async create(userId: number, dto: CreateApiKeyDto): Promise<ApiKey> {
+    const plainApiKey = randomBytes(32).toString('hex');
+    const apiKeyHash = await bcrypt.hash(plainApiKey, 10);
+
+    const ENCRYPTION_KEY = Buffer.from(process.env.ENCRYPTION_KEY!, 'hex');
+    const ALGORITHM: string = process.env.ALGORITHM as string;
+
+    const iv = randomBytes(16);
+    const cipher = createCipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+
+    let encrypted = cipher.update(plainApiKey, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+
+    const ivHex = iv.toString('hex');
+    const encryptedWithIv = ivHex + ':' + encrypted;
+
+    const user = await this.userRepository.findOneByOrFail({ id: userId });
+
+    const apiKey = this.apiKeyRepository.create({
+      user,
+      api_key_encrypt: encryptedWithIv,
+      api_key_hash: apiKeyHash,
+      revoked: false,
+      expired_at: dto.expired_at ? new Date(dto.expired_at) : null,
+      quota: dto.quota ?? null,
+    } as DeepPartial<ApiKey>);
+
+    const savedApiKey = await this.apiKeyRepository.save(apiKey);
+
+    return savedApiKey;
+  }
+
+  async decryptWithIv(encryptedWithIv: string){
+    const [ivHex, encryptedHex] = encryptedWithIv.split(':');
+    const ENCRYPTION_KEY = Buffer.from(process.env.ENCRYPTION_KEY!, 'hex');
+    const ALGORITHM: string = process.env.ALGORITHM as string;
+    
+    if (!ivHex || !encryptedHex) {
+      throw new Error('Invalid encrypted format. Expected iv:encryptedText');
+    }
+
+    const iv = Buffer.from(ivHex, 'hex');
+    const decipher = createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+
+    let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+
+    return decrypted;
   }
 
   async update(

@@ -1,13 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Api } from './api.entity';
+import { SuiClient } from '@mysten/sui.js/dist/cjs/client';
+import { Ed25519Keypair } from '@mysten/sui.js/dist/cjs/keypairs/ed25519';
 
 @Injectable()
 export class ApiService {
   constructor(
     @InjectRepository(Api)
     private apiRepository: Repository<Api>,
+    @Inject('SUI_CLIENT') 
+    private readonly suiClient: { client: SuiClient; keypair: Ed25519Keypair }
   ) {}
 
   async findAll(): Promise<Api[]> {

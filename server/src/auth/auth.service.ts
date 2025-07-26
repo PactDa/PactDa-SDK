@@ -52,7 +52,7 @@ export class AuthService {
   async login(dto: LoginDto): Promise<{ accessToken: string } | null> {
     const user = await this.userRepo.findOne({ where: { email: dto.email } });
     if (user && (await bcrypt.compare(dto.password, user.password_hash))) {
-      const payload = { sub: user.id, email: user.email };
+      const payload = { sub: user.id, email: user.email, email_verified: user.is_email_verified };
       return { accessToken: this.jwtService.sign(payload) };
     }
     throw new UnauthorizedException('Invalid email or password');

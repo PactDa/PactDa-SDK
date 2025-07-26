@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '../user/user.entity';
 import { ApiKeyPermission } from '../permission/api-key-permission.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('api_keys')
 export class ApiKey {
@@ -24,9 +25,11 @@ export class ApiKey {
   @Column({ type: 'integer', nullable: true })
   quota: number;
 
+  @Exclude()
   @Column({ type: 'text', nullable: false })
   api_key_encrypt: string;
 
+  @Exclude()
   @Column({ type: 'varchar', nullable: false, unique: true })
   api_key_hash: string;
 
