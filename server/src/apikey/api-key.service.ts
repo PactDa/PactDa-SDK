@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import { ApiKey } from './api-key.entity';
@@ -86,11 +86,11 @@ export class ApiKeyService {
     return savedApiKey;
   }
 
-  async decryptWithIv(encryptedWithIv: string){
+  async decryptWithIv(encryptedWithIv: string) {
     const [ivHex, encryptedHex] = encryptedWithIv.split(':');
     const ENCRYPTION_KEY = Buffer.from(process.env.ENCRYPTION_KEY!, 'hex');
     const ALGORITHM: string = process.env.ALGORITHM as string;
-    
+
     if (!ivHex || !encryptedHex) {
       throw new Error('Invalid encrypted format. Expected iv:encryptedText');
     }
@@ -102,6 +102,34 @@ export class ApiKeyService {
     decrypted += decipher.final('utf8');
 
     return decrypted;
+  }
+
+  async check_api_keys(plainApiKey: string): Promise<boolean> {
+    const apiKeys = await this.apiKeyRepository.find({
+      relations: ['user'],
+      where: { revoked: false },
+    });
+
+    const matchedKey = await Promise.any(
+      apiKeys.map(async (apiKey) => {
+        const isMatch = await bcrypt.compare(plainApiKey, apiKey.api_key_hash);
+        return isMatch ? apiKey : Promise.reject();
+      })
+    ).catch(() => null); 
+
+    if (!matchedKey) {
+      throw new NotFoundException('API Key not found or invalid');
+    }
+
+    if (matchedKey.revoked) {
+      throw new ForbiddenException('This API key has been revoked');
+    }
+
+    if (!matchedKey.user.is_email_verified) {
+      throw new ForbiddenException('User email has not been verified');
+    }
+
+    return true;
   }
 
   async update(

@@ -9,6 +9,7 @@ export class CreateApiKeyDto {
   @IsInt()
   quota?: number;
 
+  @IsOptional()
   @IsArray()
   permission: number[];
 }

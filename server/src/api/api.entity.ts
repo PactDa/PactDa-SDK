@@ -18,8 +18,8 @@ export class Api {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'text', nullable: false })
-  tags: string;
+  @Column({ type: 'text', nullable: true })
+  tags: string | null;
 
   @Column({ type: 'boolean', nullable: false, default: false })
   is_active: boolean;

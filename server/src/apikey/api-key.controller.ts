@@ -13,6 +13,7 @@ import {
   ForbiddenException,
   Delete,
   Patch,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiKeyService } from './api-key.service';
 import { JwtAuthGuard } from 'src/auth/strategies/jwt.guard';
@@ -20,7 +21,7 @@ import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import { EmailVerifiedGuard } from 'src/auth/strategies/emailverified.guard';
 
 @Controller('api_keys')
-export class AuthController {
+export class ApiKeysController {
   constructor(private readonly apiKeyService: ApiKeyService) { }
 
   @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
@@ -48,7 +49,10 @@ export class AuthController {
   async decrypt_api_keys(@Req() req, @Param('id') id: number) {
     const apiKey = await this.apiKeyService.findOne(id);
 
-    if (!apiKey || apiKey.user !== req.user.id) {
+    if (!apiKey) {
+      throw new NotFoundException('API Key not found');
+    }
+    if (apiKey.user.id !== req.user.id) {
       throw new ForbiddenException('You are not authorized to access this API Key');
     }
     const decrypted_api_keys = await this.apiKeyService.decryptWithIv(apiKey.api_key_encrypt);
