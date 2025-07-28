@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 @Injectable()
 export class EmailVerifiedGuard implements CanActivate {
@@ -14,6 +19,6 @@ export class EmailVerifiedGuard implements CanActivate {
       throw new UnauthorizedException('Email is not verified');
     }
 
-    return true; 
+    return true;
   }
 }

@@ -6,12 +6,8 @@ import {
   Param,
   Req,
   UseGuards,
-  HttpException,
   HttpStatus,
-  Query,
-  BadRequestException,
   ForbiddenException,
-  Delete,
   Patch,
   NotFoundException,
 } from '@nestjs/common';
@@ -22,7 +18,7 @@ import { EmailVerifiedGuard } from 'src/auth/strategies/emailverified.guard';
 
 @Controller('api_keys')
 export class ApiKeysController {
-  constructor(private readonly apiKeyService: ApiKeyService) { }
+  constructor(private readonly apiKeyService: ApiKeyService) {}
 
   @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @Get()
@@ -35,7 +31,7 @@ export class ApiKeysController {
   }
 
   @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
-  @Post("create")
+  @Post('create')
   async create(@Req() req, @Body() body: CreateApiKeyDto) {
     const api_keys = await this.apiKeyService.create(req.user.id, body);
     return {
@@ -45,7 +41,7 @@ export class ApiKeysController {
   }
 
   @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
-  @Get("show_keys/:id")
+  @Get('show_keys/:id')
   async decrypt_api_keys(@Req() req, @Param('id') id: number) {
     const apiKey = await this.apiKeyService.findOne(id);
 
@@ -53,9 +49,13 @@ export class ApiKeysController {
       throw new NotFoundException('API Key not found');
     }
     if (apiKey.user.id !== req.user.id) {
-      throw new ForbiddenException('You are not authorized to access this API Key');
+      throw new ForbiddenException(
+        'You are not authorized to access this API Key',
+      );
     }
-    const decrypted_api_keys = await this.apiKeyService.decryptWithIv(apiKey.api_key_encrypt);
+    const decrypted_api_keys = await this.apiKeyService.decryptWithIv(
+      apiKey.api_key_encrypt,
+    );
     return {
       statusCode: HttpStatus.OK,
       data: decrypted_api_keys,
@@ -63,12 +63,14 @@ export class ApiKeysController {
   }
 
   @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
-  @Patch("revoke/:id")
+  @Patch('revoke/:id')
   async revoke_api_keys(@Req() req, @Param('id') id: number) {
     const apiKey = await this.apiKeyService.findOne(id);
 
     if (!apiKey || apiKey.user !== req.user.id) {
-      throw new ForbiddenException('You are not authorized to access this API Key');
+      throw new ForbiddenException(
+        'You are not authorized to access this API Key',
+      );
     }
     const revoke_api_keys = await this.apiKeyService.revoke(id);
     return {
