@@ -3,7 +3,7 @@ import { IsString, IsArray, IsNotEmpty } from 'class-validator';
 export class CreateAgreementDto {
   @IsArray()
   @IsNotEmpty({ each: true })
-  partyAddresses: string[]; 
+  partyAddresses: string[];
 
   @IsString()
   @IsNotEmpty()

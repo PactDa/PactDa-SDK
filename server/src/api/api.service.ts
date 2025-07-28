@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Api } from './api.entity';
@@ -8,7 +13,6 @@ import { CreateAgreementDto } from './dto/create-agreement.dto';
 import { ApiKeyService } from 'src/apikey/api-key.service';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 
-
 @Injectable()
 export class ApiService implements OnModuleInit {
   constructor(
@@ -17,7 +21,7 @@ export class ApiService implements OnModuleInit {
     @Inject('SUI_CLIENT')
     private readonly suiClient: { client: SuiClient; keypair: Ed25519Keypair },
     private readonly apiKeyService: ApiKeyService,
-  ) { }
+  ) {}
 
   async findAll(): Promise<Api[]> {
     return this.apiRepository.find({
@@ -100,7 +104,7 @@ export class ApiService implements OnModuleInit {
     for (const [key, route] of newRouteMap.entries()) {
       const [method, path] = key.split(':');
       const existing = existingRoutes.find(
-        r => r.method === method && r.path === path,
+        (r) => r.method === method && r.path === path,
       );
 
       if (existing) {
@@ -148,7 +152,6 @@ export class ApiService implements OnModuleInit {
       ],
       typeArguments: [],
     });
-
 
     const result = await this.suiClient.client.signAndExecuteTransactionBlock({
       signer: this.suiClient.keypair,

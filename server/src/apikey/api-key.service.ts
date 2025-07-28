@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Repository } from 'typeorm';
 import { ApiKey } from './api-key.entity';
@@ -7,8 +11,6 @@ import * as bcrypt from 'bcrypt';
 import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
 import { User } from 'src/user/user.entity';
 
-
-
 @Injectable()
 export class ApiKeyService {
   constructor(
@@ -16,7 +18,7 @@ export class ApiKeyService {
     private apiKeyRepository: Repository<ApiKey>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   async findAll(): Promise<ApiKey[]> {
     return this.apiKeyRepository.find({
@@ -114,8 +116,8 @@ export class ApiKeyService {
       apiKeys.map(async (apiKey) => {
         const isMatch = await bcrypt.compare(plainApiKey, apiKey.api_key_hash);
         return isMatch ? apiKey : Promise.reject();
-      })
-    ).catch(() => null); 
+      }),
+    ).catch(() => null);
 
     if (!matchedKey) {
       throw new NotFoundException('API Key not found or invalid');
