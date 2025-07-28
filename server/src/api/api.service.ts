@@ -1,18 +1,23 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Api } from './api.entity';
 import { SuiClient } from '@mysten/sui.js/dist/cjs/client';
-import { Ed25519Keypair } from '@mysten/sui.js/dist/cjs/keypairs/ed25519';
+import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
+import { CreateAgreementDto } from './dto/create-agreement.dto';
+import { ApiKeyService } from 'src/apikey/api-key.service';
+import { TransactionBlock } from '@mysten/sui.js/transactions';
+
 
 @Injectable()
-export class ApiService {
+export class ApiService implements OnModuleInit {
   constructor(
     @InjectRepository(Api)
     private apiRepository: Repository<Api>,
-    @Inject('SUI_CLIENT') 
-    private readonly suiClient: { client: SuiClient; keypair: Ed25519Keypair }
-  ) {}
+    @Inject('SUI_CLIENT')
+    private readonly suiClient: { client: SuiClient; keypair: Ed25519Keypair },
+    private readonly apiKeyService: ApiKeyService,
+  ) { }
 
   async findAll(): Promise<Api[]> {
     return this.apiRepository.find({
@@ -71,5 +76,89 @@ export class ApiService {
       where: { tags },
       order: { name: 'ASC' },
     });
+  }
+
+  async onModuleInit() {
+    const routesToSave: Partial<Api>[] = [
+      {
+        name: 'CreateAgreement',
+        path: '/api/create_Agreement',
+        method: 'POST',
+        description: 'create agreement contract',
+        tags: null,
+        is_active: true,
+      },
+    ];
+    const existingRoutes = await this.apiRepository.find();
+
+    const newRouteMap = new Map<string, Partial<Api>>();
+    for (const route of routesToSave) {
+      const key = `${route.method}:${route.path}`;
+      newRouteMap.set(key, route);
+    }
+
+    for (const [key, route] of newRouteMap.entries()) {
+      const [method, path] = key.split(':');
+      const existing = existingRoutes.find(
+        r => r.method === method && r.path === path,
+      );
+
+      if (existing) {
+        await this.apiRepository.update(existing.id, route);
+      } else {
+        await this.apiRepository.save(this.apiRepository.create(route));
+      }
+    }
+
+    for (const route of existingRoutes) {
+      const key = `${route.method}:${route.path}`;
+      if (!newRouteMap.has(key)) {
+        await this.apiRepository.delete(route.id);
+      }
+    }
+
+    console.log('✔ Synced API routes to DB');
+  }
+
+  async createAgreementContract(dto: CreateAgreementDto) {
+    const PACKAGE_ID = process.env.PACKAGE_ID;
+    const MODULE_NAME = process.env.MODULE_NAME;
+    const FUNCTION_NAME = process.env.CREATE_AGREEMENT_FUNCTION_NAME;
+    const AUTHORITY_ADDRESS = process.env.SUI_AUTHORITY_ADDRESS;
+    const CLOCK_ID = process.env.CLOCK_ID as string;
+
+    await this.apiKeyService.check_api_keys(dto.apiKey);
+    const tx = new TransactionBlock();
+
+    const sanitizedPartyAddresses = dto.partyAddresses.map((addr) => {
+      if (!addr || typeof addr !== 'string') {
+        throw new BadRequestException('Invalid address in partyAddresses');
+      }
+      return addr.trim();
+    });
+
+    tx.moveCall({
+      target: `${PACKAGE_ID}::${MODULE_NAME}::${FUNCTION_NAME}`,
+      arguments: [
+        tx.pure(sanitizedPartyAddresses, 'vector<address>'),
+        tx.pure(AUTHORITY_ADDRESS, 'address'),
+        tx.pure(dto.contractTitle, 'string'),
+        tx.pure(dto.creatorAddress, 'address'),
+        tx.object(CLOCK_ID),
+      ],
+      typeArguments: [],
+    });
+
+
+    const result = await this.suiClient.client.signAndExecuteTransactionBlock({
+      signer: this.suiClient.keypair,
+      transactionBlock: tx,
+      options: {
+        showEffects: true,
+        showObjectChanges: true,
+      },
+    });
+
+    return result;
   }
 }
