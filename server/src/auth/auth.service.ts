@@ -43,7 +43,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
     const newUser = this.userRepo.create({
       ...dto,
-      password_hash: hashedPassword,
+      passwordHash: hashedPassword,
     });
 
     return await this.userRepo.save(newUser);
@@ -51,11 +51,11 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<{ accessToken: string } | null> {
     const user = await this.userRepo.findOne({ where: { email: dto.email } });
-    if (user && (await bcrypt.compare(dto.password, user.password_hash))) {
+    if (user && (await bcrypt.compare(dto.password, user.passwordHash))) {
       const payload = {
         sub: user.id,
         email: user.email,
-        email_verified: user.is_email_verified,
+        email_verified: user.isEmailVerified,
       };
       return { accessToken: this.jwtService.sign(payload) };
     }
@@ -74,7 +74,7 @@ export class AuthService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
-    if (user.is_email_verified) {
+    if (user.isEmailVerified) {
       throw new ConflictException('Email already verified');
     }
 
@@ -112,11 +112,11 @@ export class AuthService {
       throw new GoneException('Token expired');
     }
 
-    if (user.is_email_verified) {
+    if (user.isEmailVerified) {
       throw new ConflictException('Email already verified');
     }
 
-    user.is_email_verified = true;
+    user.isEmailVerified = true;
     user.metadata.email_verification = null;
 
     await this.userRepo.save(user);
@@ -184,7 +184,7 @@ export class AuthService {
         user = this.userRepo.create({
           username: profile.name || profile.email.split('@')[0],
           email: profile.email,
-          is_email_verified: profile.verified_email || false,
+          isEmailVerified: profile.verified_email || false,
           metadata: {
             googleId: profile.id,
             name: profile.name,

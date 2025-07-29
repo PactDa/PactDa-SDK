@@ -10,6 +10,7 @@ import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import * as bcrypt from 'bcrypt';
 import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
 import { User } from 'src/user/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiKeyService {
@@ -18,12 +19,13 @@ export class ApiKeyService {
     private apiKeyRepository: Repository<ApiKey>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private configService: ConfigService,
   ) {}
 
   async findAll(): Promise<ApiKey[]> {
     return this.apiKeyRepository.find({
       relations: ['user'],
-      order: { create_at: 'DESC' },
+      order: { createAt: 'DESC' },
     });
   }
 
@@ -37,13 +39,13 @@ export class ApiKeyService {
   async findByUserId(userId: number): Promise<ApiKey[]> {
     return this.apiKeyRepository.find({
       where: { user: { id: userId } },
-      order: { create_at: 'DESC' },
+      order: { createAt: 'DESC' },
     });
   }
 
   async findByApiKeyHash(apiKeyHash: string): Promise<ApiKey | null> {
     return this.apiKeyRepository.findOne({
-      where: { api_key_hash: apiKeyHash },
+      where: { apiKeyHash: apiKeyHash },
       relations: ['user'],
     });
   }
@@ -52,7 +54,7 @@ export class ApiKeyService {
     return this.apiKeyRepository.find({
       where: { user: { id: userId }, revoked: false },
       relations: ['user'],
-      order: { create_at: 'DESC' },
+      order: { createAt: 'DESC' },
     });
   }
 
@@ -76,8 +78,8 @@ export class ApiKeyService {
 
     const apiKey = this.apiKeyRepository.create({
       user,
-      api_key_encrypt: encryptedWithIv,
-      api_key_hash: apiKeyHash,
+      apiKeyEncrypt: encryptedWithIv,
+      apiKeyHash: apiKeyHash,
       revoked: false,
       expired_at: dto.expired_at ? new Date(dto.expired_at) : null,
       quota: dto.quota ?? null,
@@ -106,7 +108,7 @@ export class ApiKeyService {
     return decrypted;
   }
 
-  async check_api_keys(plainApiKey: string): Promise<boolean> {
+  async checkApiKeys(plainApiKey: string): Promise<boolean> {
     const apiKeys = await this.apiKeyRepository.find({
       relations: ['user'],
       where: { revoked: false },
@@ -114,7 +116,7 @@ export class ApiKeyService {
 
     const matchedKey = await Promise.any(
       apiKeys.map(async (apiKey) => {
-        const isMatch = await bcrypt.compare(plainApiKey, apiKey.api_key_hash);
+        const isMatch = await bcrypt.compare(plainApiKey, apiKey.apiKeyHash);
         return isMatch ? apiKey : Promise.reject();
       }),
     ).catch(() => null);
@@ -127,7 +129,7 @@ export class ApiKeyService {
       throw new ForbiddenException('This API key has been revoked');
     }
 
-    if (!matchedKey.user.is_email_verified) {
+    if (!matchedKey.user.isEmailVerified) {
       throw new ForbiddenException('User email has not been verified');
     }
 
@@ -158,10 +160,10 @@ export class ApiKeyService {
 
   async isExpired(id: number): Promise<boolean> {
     const apiKey = await this.findOne(id);
-    if (!apiKey || !apiKey.expired_at) {
+    if (!apiKey || !apiKey.expiredAt) {
       return false;
     }
-    return new Date() > apiKey.expired_at;
+    return new Date() > apiKey.expiredAt;
   }
 
   async isRevoked(id: number): Promise<boolean> {

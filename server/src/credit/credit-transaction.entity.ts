@@ -13,26 +13,26 @@ export class CreditTransaction {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'integer', nullable: false })
+  @Column({ name: 'amount', type: 'integer', nullable: false })
   amount: number;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ name: 'type', type: 'text', nullable: false })
   type: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'description', type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ name: 'reference_type', type: 'text', nullable: false })
   referenceType: string;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ name: 'reference_id', type: 'text', nullable: false })
   referenceId: string;
 
-  @CreateDateColumn({ type: 'timestamptz', nullable: false })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz', nullable: false })
   createdAt: Date;
 
-  @Column({ type: 'integer', nullable: false })
-  balance_after: number;
+  @Column({ name: 'balance_after', type: 'integer', nullable: false })
+  balanceAfter: number;
 
   // Relationships
   @ManyToOne(() => User, (user) => user.creditTransactions)

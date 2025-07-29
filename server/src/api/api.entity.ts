@@ -6,23 +6,23 @@ export class Api {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ name: 'name', type: 'text', nullable: false })
   name: string;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ name: 'path', type: 'text', nullable: false })
   path: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'method', type: 'varchar', nullable: false })
   method: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'description', type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'tags', type: 'text', nullable: true })
   tags: string | null;
 
-  @Column({ type: 'boolean', nullable: false, default: false })
-  is_active: boolean;
+  @Column({ name: 'is_active', type: 'boolean', nullable: false, default: false })
+  isActive: boolean;
 
   // Relationships
   @OneToMany(() => ApiKeyPermission, (apiKeyPermission) => apiKeyPermission.api)

@@ -44,7 +44,7 @@ export class UserService {
     if (!user) {
       throw new Error('User not found');
     }
-    user.credit_balance += amount;
+    user.creditBalance += amount;
     return this.userRepository.save(user);
   }
 
@@ -53,7 +53,7 @@ export class UserService {
     if (!user) {
       throw new Error('User not found');
     }
-    user.total_spend += amount;
+    user.totalSpend += amount;
     return this.userRepository.save(user);
   }
 

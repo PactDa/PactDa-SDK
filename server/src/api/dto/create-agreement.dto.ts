@@ -13,7 +13,4 @@ export class CreateAgreementDto {
   @IsNotEmpty()
   creatorAddress: string;
 
-  @IsString()
-  @IsNotEmpty()
-  apiKey: string;
 }
