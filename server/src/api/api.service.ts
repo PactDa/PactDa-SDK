@@ -12,6 +12,7 @@ import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
 import { CreateAgreementDto } from './dto/create-agreement.dto';
 import { ApiKeyService } from 'src/apikey/api-key.service';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiService implements OnModuleInit {
@@ -21,6 +22,7 @@ export class ApiService implements OnModuleInit {
     @Inject('SUI_CLIENT')
     private readonly suiClient: { client: SuiClient; keypair: Ed25519Keypair },
     private readonly apiKeyService: ApiKeyService,
+    private readonly configService: ConfigService,
   ) {}
 
   async findAll(): Promise<Api[]> {
@@ -35,7 +37,7 @@ export class ApiService implements OnModuleInit {
 
   async findActive(): Promise<Api[]> {
     return this.apiRepository.find({
-      where: { is_active: true },
+      where: { isActive: true },
       order: { name: 'ASC' },
     });
   }
@@ -66,12 +68,12 @@ export class ApiService implements OnModuleInit {
   }
 
   async activate(id: number): Promise<Api | null> {
-    await this.apiRepository.update(id, { is_active: true });
+    await this.apiRepository.update(id, { isActive: true });
     return this.findOne(id);
   }
 
   async deactivate(id: number): Promise<Api | null> {
-    await this.apiRepository.update(id, { is_active: false });
+    await this.apiRepository.update(id, { isActive: false });
     return this.findOne(id);
   }
 
@@ -90,7 +92,7 @@ export class ApiService implements OnModuleInit {
         method: 'POST',
         description: 'create agreement contract',
         tags: null,
-        is_active: true,
+        isActive: true,
       },
     ];
     const existingRoutes = await this.apiRepository.find();
@@ -124,14 +126,13 @@ export class ApiService implements OnModuleInit {
     console.log('✔ Synced API routes to DB');
   }
 
-  async createAgreementContract(dto: CreateAgreementDto) {
-    const PACKAGE_ID = process.env.PACKAGE_ID;
-    const MODULE_NAME = process.env.MODULE_NAME;
-    const FUNCTION_NAME = process.env.CREATE_AGREEMENT_FUNCTION_NAME;
-    const AUTHORITY_ADDRESS = process.env.SUI_AUTHORITY_ADDRESS;
-    const CLOCK_ID = process.env.CLOCK_ID as string;
-
-    await this.apiKeyService.check_api_keys(dto.apiKey);
+  async createAgreementContract(dto: CreateAgreementDto, apikey) {
+    const PACKAGE_ID = this.configService.get<string>('PACKAGE_ID');
+    const MODULE_NAME = this.configService.get<string>('MODULE_NAME');
+    const FUNCTION_NAME = this.configService.get<string>('CREATE_AGREEMENT_FUNCTION_NAME');
+    const AUTHORITY_ADDRESS = this.configService.get<string>('SUI_AUTHORITY_ADDRESS');
+    const CLOCK_ID = this.configService.get<string>('CLOCK_ID') as string;
+    
     const tx = new TransactionBlock();
 
     const sanitizedPartyAddresses = dto.partyAddresses.map((addr) => {

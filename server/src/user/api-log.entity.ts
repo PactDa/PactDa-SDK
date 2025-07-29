@@ -13,20 +13,20 @@ export class ApiLog {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ name: 'api', type: 'text', nullable: false })
   api: string;
 
-  @CreateDateColumn({ type: 'timestamptz', nullable: false })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz', nullable: false })
   createdAt: Date;
 
-  @Column({ type: 'integer', nullable: false })
-  credits_used: number;
+  @Column({ name: 'credits_used', type: 'integer', nullable: false })
+  creditsUsed: number;
 
-  @Column({ type: 'boolean', nullable: false })
+  @Column({ name: 'success', type: 'boolean', nullable: false })
   success: boolean;
 
-  @Column({ type: 'text', nullable: true })
-  error_code: string;
+  @Column({ name: 'error_code', type: 'text', nullable: true })
+  errorCode: string;
 
   // Relationships
   @ManyToOne(() => User, (user) => user.apiLogs)
