@@ -87,6 +87,44 @@ export class EnvironmentVariables {
   @IsNumber()
   @Type(() => Number)
   EXTERNAL_API_TIMEOUT_MS: number = 10000; // 10 seconds
+
+  // 🔐 Encryption Configuration
+  @IsString()
+  @IsOptional()
+  ENCRYPTION_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  ALGORITHM?: string;
+
+  // 🔗 Sui & Contract Configuration
+  @IsString()
+  @IsOptional()
+  SUI_PRIVATE_KEY?: string;
+
+  @IsString()
+  @IsIn(['devnet', 'testnet', 'mainnet'])
+  SUI_ENVIROMENT: string = 'testnet';
+
+  @IsString()
+  @IsOptional()
+  PACKAGE_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  MODULE_NAME?: string;
+
+  @IsString()
+  @IsOptional()
+  AUTHORITY_ADDRESS?: string;
+
+  @IsString()
+  @IsOptional()
+  CLOCK_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  CREATE_AGREEMENT_FUNCTION_NAME?: string;
 }
 
 export function validateEnvironment(config: Record<string, unknown>) {

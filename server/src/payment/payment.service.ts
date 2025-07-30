@@ -36,7 +36,7 @@ export class PaymentService {
     providerTransactionId: string,
   ): Promise<PaymentLog | null> {
     return this.paymentLogRepository.findOne({
-      where: { provider_transaction_id: providerTransactionId },
+      where: { providerTransactionId: providerTransactionId },
       relations: ['user'],
     });
   }
