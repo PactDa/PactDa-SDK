@@ -33,6 +33,10 @@ export class ApiKey {
   @Column({ name: 'api_key_hash', type: 'varchar', nullable: false, unique: true })
   apiKeyHash: string;
 
+  @Exclude()
+  @Column({ name: 'api_key_digest', type: 'varchar', nullable: false, unique: true })
+  apiKeyDigest: string;
+
   @Column({ name: 'revoked', type: 'boolean', nullable: false })
   revoked: boolean;
 
