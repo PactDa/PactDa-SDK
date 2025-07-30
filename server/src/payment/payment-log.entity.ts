@@ -13,32 +13,32 @@ export class PaymentLog {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ name: 'provider', type: 'text', nullable: false })
   provider: string;
 
-  @CreateDateColumn({ type: 'timestamptz', nullable: false })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz', nullable: false })
   createdAt: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
-  paid_at: Date;
+  @Column({ name: 'paid_at', type: 'timestamptz', nullable: true })
+  paidAt: Date;
 
-  @Column({ type: 'text', nullable: false, unique: true })
-  provider_transaction_id: string;
+  @Column({ name: 'provider_transaction_id', type: 'text', nullable: false, unique: true })
+  providerTransactionId: string;
 
-  @Column({ type: 'decimal', nullable: false })
+  @Column({ name: 'amount', type: 'decimal', nullable: false })
   amount: number;
 
-  @Column({ type: 'integer', nullable: false })
-  credit_amount: number;
+  @Column({ name: 'credit_amount', type: 'integer', nullable: false })
+  creditAmount: number;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ name: 'status', type: 'text', nullable: false })
   status: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'note', type: 'text', nullable: true })
   note: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  raw_response: any;
+  @Column({ name: 'raw_response', type: 'jsonb', nullable: true })
+  rawResponse: any;
 
   // Relationships
   @ManyToOne(() => User, (user) => user.paymentLogs)

@@ -8,13 +8,13 @@ This document provides detailed information for calling PactDa smart contract fu
 ## Core Agreement Functions
 
 ### 1. create_agreement()
-Creates a new PactDa contract with escrow and resolution policy.
+Creates a new PactDa contract with escrow and auto-creates resolver.
 
 **Function Signature:**
 ```move
 public entry fun create_agreement(
     parties: vector<address>,
-    resolver: ProgrammaticResolver,
+    authority_address: address,
     title: String,
     creator: address,
     clock: &Clock,
@@ -34,7 +34,7 @@ await moveCall({
     target: `${PACKAGE_ID}::pactda_core::create_agreement`,
     arguments: [
         parties,                           // vector<address>
-        resolver_object,                   // ProgrammaticResolver object
+        "0x9999...authority_address",       // address (resolver auto-created)
         "Website Development Project",      // title
         "0x1234...contractor_address",     // creator
         clock_object,                      // &Clock
@@ -50,7 +50,7 @@ sui client call \
     --function create_agreement \
     --args \
         "[$CONTRACTOR_ADDRESS,$CLIENT_ADDRESS]" \
-        $RESOLVER_ID \
+        $AUTHORITY_ADDRESS \
         "Website Development Project" \
         $CONTRACTOR_ADDRESS \
         $CLOCK_ID
@@ -252,8 +252,8 @@ Here's a complete milestone-based project workflow:
 
 ### 1. Setup Project
 ```typescript
-// 1. Create contract
-await create_agreement([contractor, client], resolver, "Website Project", contractor);
+// 1. Create contract (resolver auto-created)
+await create_agreement([contractor, client], authority_address, "Website Project", contractor);
 
 // 2. Fund escrow with 1000 SUI
 await fund_escrow(contract, escrow, coin_1000_sui);

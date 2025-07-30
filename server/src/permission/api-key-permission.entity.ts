@@ -10,9 +10,9 @@ export class ApiKeyPermission {
   // Relationships
   @ManyToOne(() => ApiKey, (apiKey) => apiKey.apiKeyPermissions)
   @JoinColumn({ name: 'api_key_id' })
-  apiKey: ApiKey;
+  apiKey: ApiKey;                     
 
   @ManyToOne(() => Api, (api) => api.apiKeyPermissions)
-  @JoinColumn({ name: 'api_id' })
-  api: Api;
+  @JoinColumn({ name: 'api_id' })     
+  api: Api;                          
 }

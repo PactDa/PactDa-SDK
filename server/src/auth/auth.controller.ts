@@ -73,7 +73,7 @@ export class AuthController {
     };
   }
 
-  @Post('send_verification_email')
+  @Post('send-verification-email')
   @UseGuards(JwtAuthGuard)
   async sendVerificationEmail(@Req() req) {
     await this.authService.sendVerificationEmail(req.user.id);

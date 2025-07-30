@@ -16,37 +16,37 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'username', type: 'varchar', nullable: false })
   username: string;
 
-  @Column({ type: 'varchar', nullable: false, unique: true })
+  @Column({ name: 'email', type: 'varchar', nullable: false, unique: true })
   email: string;
 
   @Exclude()
-  @Column({ type: 'varchar', nullable: true })
-  password_hash: string;
+  @Column({ name: 'password_hash', type: 'varchar', nullable: true })
+  passwordHash: string;
 
-  @CreateDateColumn({ type: 'timestamptz', nullable: false })
-  create_at: Date;
+  @CreateDateColumn({ name: 'create_at', type: 'timestamptz', nullable: false })
+  createAt: Date;
 
   @Column({
-    type: 'timestamp',
     name: 'last_login_at',
+    type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
   lastLoginAt: Date;
 
-  @Column({ type: 'boolean', nullable: false, default: false })
-  is_email_verified: boolean;
+  @Column({ name: 'is_email_verified', type: 'boolean', nullable: false, default: false })
+  isEmailVerified: boolean;
 
-  @Column({ type: 'jsonb', nullable: true, default: {} })
+  @Column({ name: 'metadata', type: 'jsonb', nullable: true, default: {} })
   metadata: Record<string, any>;
 
-  @Column({ type: 'integer', nullable: false, default: 0 })
-  credit_balance: number;
+  @Column({ name: 'credit_balance', type: 'integer', nullable: false, default: 0 })
+  creditBalance: number;
 
-  @Column({ type: 'integer', nullable: false, default: 0 })
-  total_spend: number;
+  @Column({ name: 'total_spend', type: 'integer', nullable: false, default: 0 })
+  totalSpend: number;
 
   // Relationships
   @OneToMany(
