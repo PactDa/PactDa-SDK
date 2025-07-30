@@ -3,7 +3,7 @@ import { IsDateString, IsInt, IsOptional, IsArray } from 'class-validator';
 export class CreateApiKeyDto {
   @IsOptional()
   @IsDateString()
-  expired_at?: string;
+  expiredAt?: string;
 
   @IsOptional()
   @IsInt()

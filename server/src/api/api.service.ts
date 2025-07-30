@@ -88,7 +88,7 @@ export class ApiService implements OnModuleInit {
     const routesToSave: Partial<Api>[] = [
       {
         name: 'CreateAgreement',
-        path: '/api/create_Agreement',
+        path: '/api/create-agreement',
         method: 'POST',
         description: 'create agreement contract',
         tags: null,
@@ -122,11 +122,9 @@ export class ApiService implements OnModuleInit {
         await this.apiRepository.delete(route.id);
       }
     }
-
-    console.log('✔ Synced API routes to DB');
   }
 
-  async createAgreementContract(dto: CreateAgreementDto, apikey) {
+  async createAgreementContract(dto: CreateAgreementDto) {
     const PACKAGE_ID = this.configService.get<string>('PACKAGE_ID');
     const MODULE_NAME = this.configService.get<string>('MODULE_NAME');
     const FUNCTION_NAME = this.configService.get<string>('CREATE_AGREEMENT_FUNCTION_NAME');

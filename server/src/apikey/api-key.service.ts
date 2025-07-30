@@ -8,7 +8,7 @@ import { DeepPartial, Repository } from 'typeorm';
 import { ApiKey } from './api-key.entity';
 import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import * as bcrypt from 'bcrypt';
-import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
+import { randomBytes, createCipheriv, createDecipheriv, createHash } from 'crypto';
 import { User } from 'src/user/user.entity';
 import { ConfigService } from '@nestjs/config';
 
@@ -20,7 +20,7 @@ export class ApiKeyService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   async findAll(): Promise<ApiKey[]> {
     return this.apiKeyRepository.find({
@@ -61,6 +61,7 @@ export class ApiKeyService {
   async create(userId: number, dto: CreateApiKeyDto): Promise<ApiKey> {
     const plainApiKey = randomBytes(32).toString('hex');
     const apiKeyHash = await bcrypt.hash(plainApiKey, 10);
+    const apiKeyDigest = createHash('sha256').update(plainApiKey).digest('hex');
 
     const ENCRYPTION_KEY = Buffer.from(process.env.ENCRYPTION_KEY!, 'hex');
     const ALGORITHM: string = process.env.ALGORITHM as string;
@@ -80,8 +81,9 @@ export class ApiKeyService {
       user,
       apiKeyEncrypt: encryptedWithIv,
       apiKeyHash: apiKeyHash,
+      apiKeyDigest:apiKeyDigest,
       revoked: false,
-      expired_at: dto.expired_at ? new Date(dto.expired_at) : null,
+      expiredAt: dto.expiredAt ? new Date(dto.expiredAt) : null,
       quota: dto.quota ?? null,
     } as DeepPartial<ApiKey>);
 
@@ -106,34 +108,6 @@ export class ApiKeyService {
     decrypted += decipher.final('utf8');
 
     return decrypted;
-  }
-
-  async checkApiKeys(plainApiKey: string): Promise<boolean> {
-    const apiKeys = await this.apiKeyRepository.find({
-      relations: ['user'],
-      where: { revoked: false },
-    });
-
-    const matchedKey = await Promise.any(
-      apiKeys.map(async (apiKey) => {
-        const isMatch = await bcrypt.compare(plainApiKey, apiKey.apiKeyHash);
-        return isMatch ? apiKey : Promise.reject();
-      }),
-    ).catch(() => null);
-
-    if (!matchedKey) {
-      throw new NotFoundException('API Key not found or invalid');
-    }
-
-    if (matchedKey.revoked) {
-      throw new ForbiddenException('This API key has been revoked');
-    }
-
-    if (!matchedKey.user.isEmailVerified) {
-      throw new ForbiddenException('User email has not been verified');
-    }
-
-    return true;
   }
 
   async update(
