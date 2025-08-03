@@ -1,1 +1,1 @@
-declare module '@mysten/sui.js';
+declare module '@mysten/sui';

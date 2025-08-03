@@ -1,5 +1,6 @@
-import { getFullnodeUrl, SuiClient } from '@mysten/sui.js/client';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
+import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
+import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
+
 import { ConfigService } from '@nestjs/config';
 
 export const SuiProvider = {
