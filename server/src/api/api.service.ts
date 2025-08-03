@@ -7,10 +7,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Api } from './api.entity';
-import { CoinStruct, SuiClient } from '@mysten/sui/client';
+import { SuiClient } from '@mysten/sui/client';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { CreateAgreementDto } from './dto/create-agreement.dto';
-import { ApiKeyService } from 'src/apikey/api-key.service';
 import { Transaction, coinWithBalance } from '@mysten/sui/transactions';
 import { ConfigService } from '@nestjs/config';
 import { FundEscrowDto } from './dto/fund-the-escrow.dto';
