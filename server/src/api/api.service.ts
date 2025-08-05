@@ -7,12 +7,14 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Api } from './api.entity';
-import { SuiClient } from '@mysten/sui.js/dist/cjs/client';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
+import { SuiClient } from '@mysten/sui/client';
+import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import { CreateAgreementDto } from './dto/create-agreement.dto';
-import { ApiKeyService } from 'src/apikey/api-key.service';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { Transaction, coinWithBalance } from '@mysten/sui/transactions';
 import { ConfigService } from '@nestjs/config';
+import { FundEscrowDto } from './dto/fund-the-escrow.dto';
+import { normalizeSuiAddress } from '@mysten/sui.js/utils';
+import { bcs } from '@mysten/sui/bcs';
 
 @Injectable()
 export class ApiService implements OnModuleInit {
@@ -21,9 +23,8 @@ export class ApiService implements OnModuleInit {
     private apiRepository: Repository<Api>,
     @Inject('SUI_CLIENT')
     private readonly suiClient: { client: SuiClient; keypair: Ed25519Keypair },
-    private readonly apiKeyService: ApiKeyService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async findAll(): Promise<Api[]> {
     return this.apiRepository.find({
@@ -94,6 +95,14 @@ export class ApiService implements OnModuleInit {
         tags: null,
         isActive: true,
       },
+      {
+        name: 'FundTheEscrow',
+        path: '/api/fund-the-escrow',
+        method: 'POST',
+        description: 'Add funds to the contract escrow account.',
+        tags: null,
+        isActive: true,
+      },
     ];
     const existingRoutes = await this.apiRepository.find();
 
@@ -128,33 +137,67 @@ export class ApiService implements OnModuleInit {
     const PACKAGE_ID = this.configService.get<string>('PACKAGE_ID');
     const MODULE_NAME = this.configService.get<string>('MODULE_NAME');
     const FUNCTION_NAME = this.configService.get<string>('CREATE_AGREEMENT_FUNCTION_NAME');
-    const AUTHORITY_ADDRESS = this.configService.get<string>('SUI_AUTHORITY_ADDRESS');
+    const AUTHORITY_ADDRESS = this.configService.get<string>('SUI_AUTHORITY_ADDRESS') as string;
     const CLOCK_ID = this.configService.get<string>('CLOCK_ID') as string;
-    
-    const tx = new TransactionBlock();
+
+    const tx = new Transaction();
 
     const sanitizedPartyAddresses = dto.partyAddresses.map((addr) => {
       if (!addr || typeof addr !== 'string') {
         throw new BadRequestException('Invalid address in partyAddresses');
       }
-      return addr.trim();
+      return normalizeSuiAddress(addr.trim());
     });
+
+    const serializedPartyVector = bcs.vector(bcs.Address).serialize(sanitizedPartyAddresses);
+    const serializedAuthority = bcs.Address.serialize(normalizeSuiAddress(AUTHORITY_ADDRESS));
+    const serializedCreator = bcs.Address.serialize(normalizeSuiAddress(dto.creatorAddress));
+    const serializedTitle = bcs.String.serialize(dto.contractTitle);
 
     tx.moveCall({
       target: `${PACKAGE_ID}::${MODULE_NAME}::${FUNCTION_NAME}`,
       arguments: [
-        tx.pure(sanitizedPartyAddresses, 'vector<address>'),
-        tx.pure(AUTHORITY_ADDRESS, 'address'),
-        tx.pure(dto.contractTitle, 'string'),
-        tx.pure(dto.creatorAddress, 'address'),
+        tx.pure(serializedPartyVector),
+        tx.pure(serializedAuthority),
+        tx.pure(serializedTitle),
+        tx.pure(serializedCreator),
         tx.object(CLOCK_ID),
-      ],
-      typeArguments: [],
+      ]
     });
 
-    const result = await this.suiClient.client.signAndExecuteTransactionBlock({
+    const result = await this.suiClient.client.signAndExecuteTransaction({
       signer: this.suiClient.keypair,
-      transactionBlock: tx,
+      transaction: tx,
+      options: {
+        showEffects: true,
+        showObjectChanges: true,
+      },
+    });
+
+    return result;
+  }
+
+  async FundEscrow(dto: FundEscrowDto) {
+    const PACKAGE_ID = this.configService.get<string>('PACKAGE_ID');
+    const MODULE_NAME = this.configService.get<string>('MODULE_NAME');
+    const FUNCTION_NAME = this.configService.get<string>('FUND_THE_ESCROW_FUNCTION_NAME');
+    const CLOCK_ID = this.configService.get<string>('CLOCK_ID') as string;
+
+    const tx = new Transaction();
+
+    tx.moveCall({
+      target: `${PACKAGE_ID}::${MODULE_NAME}::${FUNCTION_NAME}`,
+      arguments: [
+        tx.object(dto.contractId),
+        tx.object(dto.escrowId),
+        coinWithBalance({ balance: dto.totalCoinMist }),
+        tx.object(CLOCK_ID),
+      ]
+    });
+
+    const result = await this.suiClient.client.signAndExecuteTransaction({
+      signer: this.suiClient.keypair,
+      transaction: tx,
       options: {
         showEffects: true,
         showObjectChanges: true,

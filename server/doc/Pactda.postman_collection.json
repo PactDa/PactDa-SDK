@@ -426,8 +426,30 @@
 				{
 					"name": "/show_keys/:id",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEzLCJlbWFpbCI6IlRoZUowOTE4NDc4NTEzQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJpYXQiOjE3NTM4NDEyMjIsImV4cCI6MTc1Mzg0NDgyMn0.RKCpukStcPGhPvFix1hIYJYCkVdl86hs770AEdi3Gg4",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/api-keys/show-keys/6",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"api-keys",
+								"show-keys",
+								"6"
+							]
+						}
 					},
 					"response": []
 				}
@@ -439,8 +461,88 @@
 				{
 					"name": "/create_Agreement",
 					"request": {
-						"method": "GET",
-						"header": []
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "a799e905b279c479b318cc3245c5d32c28b038c01f7f789f4c235941daf30ad1",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "pactda-api-key",
+								"value": "59129b3ae033cc6188842fa6832cc2dedad2d0a902e315116176195cba9ecf70",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"partyAddresses\": [\r\n    \"0x18a4c45a96c15d62b82b341f18738125bf875fee86057d88589a183700601a1c\",\r\n    \"0x07b565b5969a2dbbd09ee259417e688b5b3cdaca2b139acf03d3f8a6af0da681\"\r\n  ],\r\n  \"contractTitle\": \"Agreement for Service Usage\",\r\n  \"creatorAddress\": \"0x18a4c45a96c15d62b82b341f18738125bf875fee86057d88589a183700601a1c\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/create-Agreement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"create-Agreement"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/fund-the-escrow",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "5b24eabe9578f289eae7bc83e398e8347910af1639b1a0474af55c87aadf1ad0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "pactda-api-key",
+								"value": "59129b3ae033cc6188842fa6832cc2dedad2d0a902e315116176195cba9ecf70",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"contractId\": \"0x361154ed7cdfef5940a11c18626c7211909da79b08e38dc8d461bf99826370f9\",\r\n  \"escrowId\": \"0x9fa71ba87bf42bfa12133e822847db8a188d90fe070879984b5af100385fb080\",\r\n  \"totalCoinMist\": 2000\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/fund-the-escrow",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"fund-the-escrow"
+							]
+						}
 					},
 					"response": []
 				}

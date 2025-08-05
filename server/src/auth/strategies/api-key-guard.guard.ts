@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { IsNull, MoreThanOrEqual, Repository } from 'typeorm';
 import { ApiKey } from 'src/apikey/api-key.entity';
 import * as bcrypt from 'bcrypt';
 import { createHash } from 'crypto';
@@ -32,11 +32,18 @@ export class ApiKeyGuard implements CanActivate {
     const apiKeyDigest = createHash('sha256').update(rawApiKey).digest('hex');
 
     const matchedKey = await this.apiKeyRepository.findOne({
-      where: {
-        apiKeyDigest,
-        revoked: false,
-        expiredAt: MoreThanOrEqual(new Date()),
-      },
+      where: [
+        {
+          apiKeyDigest,
+          revoked: false,
+          expiredAt: MoreThanOrEqual(new Date()),
+        },
+        {
+          apiKeyDigest,
+          revoked: false,
+          expiredAt: IsNull(),
+        },
+      ],
       relations: ['user'],
     });
 
