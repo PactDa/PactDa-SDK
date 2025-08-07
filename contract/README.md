@@ -23,7 +23,7 @@ PactDa implements a trust-based agreement platform with three core smart contrac
 - dApp Kit (optional, for React): `@mysten/dapp-kit`
 
 ### Contract Configuration
-- **Package ID**: `0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db`
+- **Package ID**: `0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932`
 - **Clock ID**: `0x6` (system object, always the same)
 
 ---
@@ -89,7 +89,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 **Server Function:** Only the server can create contracts and will be set as the `creator`.
 
 ```typescript
-const PACKAGE_ID = "0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db";
+const PACKAGE_ID = "0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932";
 const CLOCK_ID = "0x6";
 
 async function createAgreement(
@@ -553,7 +553,7 @@ export class PactDaServerClient {
   constructor(
     serverPrivateKey: string,  // Server's private key
     network: 'testnet' | 'mainnet' = 'testnet',
-    packageId: string = '0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db'
+    packageId: string = '0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932'
   ) {
     this.client = new SuiClient({ url: getFullnodeUrl(network) });
     this.serverKeypair = Ed25519Keypair.deriveKeypair(serverPrivateKey);
@@ -883,7 +883,7 @@ sui client envs
 ```bash
 # Server creates agreement with user addresses as parties
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function create_agreement \
     --args \
@@ -901,7 +901,7 @@ sui client call \
 ```bash
 # Server creates business agreement
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function create_agreement \
     --args \
@@ -932,7 +932,7 @@ sui client gas
 
 # Server funds escrow with server's coin object
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function fund_escrow \
     --args $CONTRACT_ID $ESCROW_ID 0x[server_coin_object_id] 0x6 \
@@ -946,7 +946,7 @@ sui client split-coin --coin-id 0x[large_coin_id] --amounts 10000000000 --gas-bu
 
 # Use the split coin for funding
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function fund_escrow \
     --args $CONTRACT_ID $ESCROW_ID 0x[split_coin_id] 0x6 \
@@ -959,7 +959,7 @@ sui client call \
 ```bash
 # Milestone for 3 SUI (3000000000 MIST)
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function add_milestone \
     --args \
@@ -981,7 +981,7 @@ APPROVER="0xclient456"
 
 # Milestone 1: Frontend (5 SUI)
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function add_milestone \
     --args $CONTRACT_ID 5000000000 $APPROVER '{"title":"Frontend Development","description":"Complete user interface"}' 0x6 \
@@ -989,7 +989,7 @@ sui client call \
 
 # Milestone 2: Backend (7 SUI)  
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function add_milestone \
     --args $CONTRACT_ID 7000000000 $APPROVER '{"title":"Backend API","description":"Database and API implementation"}' 0x6 \
@@ -997,7 +997,7 @@ sui client call \
 
 # Milestone 3: Testing (3 SUI)
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function add_milestone \
     --args $CONTRACT_ID 3000000000 $APPROVER '{"title":"Testing & Deployment","description":"QA testing and production deployment"}' 0x6 \
@@ -1010,7 +1010,7 @@ sui client call \
 ```bash
 # Server marks milestone 1 as completed
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function complete_milestone \
     --args $CONTRACT_ID 1 0x6 \
@@ -1023,7 +1023,7 @@ sui client call \
 ```bash
 # Server approves milestone 1 on behalf of the designated approver
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function approve_milestone \
     --args $CONTRACT_ID 1 0xclient_approver_address 0x6 \
@@ -1036,7 +1036,7 @@ sui client call \
 ```bash
 # Server withdraws payment for approved milestone and sends to recipient
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function withdraw_milestone_payment \
     --args $CONTRACT_ID $ESCROW_ID 1 0xrecipient_user_address 0x6 \
@@ -1051,7 +1051,7 @@ sui client call \
 ```bash
 # Authority creates their resolver
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module resolution_policies \
     --function create_resolver_entry \
     --args 0xauthority_address 0x6 \
@@ -1062,7 +1062,7 @@ sui client call \
 ```bash
 # Authority reports the winner
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module resolution_policies \
     --function report_outcome \
     --args $RESOLVER_ID 0xwinner_party_address 0x6 \
@@ -1073,7 +1073,7 @@ sui client call \
 ```bash
 # Execute settlement based on resolver decision
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function settle_agreement \
     --args $CONTRACT_ID $ESCROW_ID $RESOLVER_ID 0x6 \
@@ -1085,7 +1085,7 @@ sui client call \
 ### Mint Demonstration NFT (Admin Only)
 ```bash
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_admin \
     --function admin_mint_vcnft \
     --args \
@@ -1120,10 +1120,10 @@ sui client objects 0xaddress
 ### Event Monitoring
 ```bash
 # Monitor events from the package
-sui client events --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db
+sui client events --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932
 
 # Filter events by module
-sui client events --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db --module pactda_core
+sui client events --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 --module pactda_core
 
 # Get transaction details
 sui client transaction $TX_DIGEST
@@ -1157,7 +1157,7 @@ WAGER_AMOUNT="5000000000"  # 5 SUI in MIST
 echo "=== Creating Wager Agreement ==="
 # Step 1: Create agreement
 RESULT=$(sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function create_agreement \
     --args "[\"$PLAYER1\",\"$PLAYER2\"]" "$AUTHORITY" "Gaming Contest Wager" "$PLAYER1" 0x6 \
@@ -1174,7 +1174,7 @@ echo "=== Both Players Fund Escrow ==="
 # Step 2: Players fund the wager (run this from each player's wallet)
 # Player 1 funding
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function fund_escrow \
     --args $CONTRACT_ID $ESCROW_ID 0x[player1_coin] 0x6 \
@@ -1201,7 +1201,7 @@ PROJECT_FUND="15000000000"  # 15 SUI total project value
 echo "=== Creating Project Agreement ==="
 # Create agreement with client as authority
 RESULT=$(sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function create_agreement \
     --args "[\"$CLIENT\",\"$CONTRACTOR\"]" "$CLIENT" "Website Development Project" "$CLIENT" 0x6 \
@@ -1213,21 +1213,21 @@ ESCROW_ID=$(echo $RESULT | jq -r '.objectChanges[] | select(.type=="created" and
 echo "=== Adding Project Milestones ==="
 # Add 3 milestones
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function add_milestone \
     --args $CONTRACT_ID 6000000000 $CLIENT '{"title":"UI/UX Design","deliverables":["Mockups","Prototypes"]}' 0x6 \
     --gas-budget 10000000
 
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function add_milestone \
     --args $CONTRACT_ID 7000000000 $CLIENT '{"title":"Development","deliverables":["Frontend","Backend","Database"]}' 0x6 \
     --gas-budget 10000000
 
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function add_milestone \
     --args $CONTRACT_ID 2000000000 $CLIENT '{"title":"Testing & Deployment","deliverables":["QA","Production deployment"]}' 0x6 \
@@ -1235,7 +1235,7 @@ sui client call \
 
 echo "=== Client Funds Full Project Amount ==="
 sui client call \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function fund_escrow \
     --args $CONTRACT_ID $ESCROW_ID 0x[client_coin] 0x6 \
@@ -1258,7 +1258,7 @@ echo "4. Repeat for remaining milestones"
 ```bash
 # Use dry-run to estimate gas costs
 sui client call --dry-run \
-    --package 0xe461e911e3094a467af8f2e6e6bb52863b525ce09e9736289c54741ea1a045db \
+    --package 0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932 \
     --module pactda_core \
     --function create_agreement \
     --args "[\"0xaddr1\",\"0xaddr2\"]" "0xauth" "Test" "0xcreator" 0x6

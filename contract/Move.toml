@@ -2,6 +2,7 @@
 name = "pactda"
 version = "1.0.0"
 edition = "2024.beta"
+published-at = "0xc34fb8d78d5b7cff69dec9bbfcdfcc8de8b0d5ab84333628b559589bf059f932"
 # license = ""           # e.g., "MIT", "GPL", "Apache 2.0"
 # authors = ["..."]      # e.g., ["Joe Smith (joesmith@noemail.com)", "John Snow (johnsnow@noemail.com)"]
 
