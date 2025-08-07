@@ -545,6 +545,182 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "/add-milestone",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "5b24eabe9578f289eae7bc83e398e8347910af1639b1a0474af55c87aadf1ad0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "pactda-api-key",
+								"value": "59129b3ae033cc6188842fa6832cc2dedad2d0a902e315116176195cba9ecf70",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"contractId\": \"0x361154ed7cdfef5940a11c18626c7211909da79b08e38dc8d461bf99826370f9\",\r\n  \"approverAddress\": \"0x18a4c45a96c15d62b82b341f18738125bf875fee86057d88589a183700601a1c\",\r\n  \"amountInMist\": 1000000000,\r\n  \"milestoneData\": {\r\n    \"title\": \"Milestone Name\",\r\n    \"description\": \"Description of the milestone\"\r\n  }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/add-milestone",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"add-milestone"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/complete-milestone",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "5b24eabe9578f289eae7bc83e398e8347910af1639b1a0474af55c87aadf1ad0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "pactda-api-key",
+								"value": "59129b3ae033cc6188842fa6832cc2dedad2d0a902e315116176195cba9ecf70",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"contractId\": \"0x361154ed7cdfef5940a11c18626c7211909da79b08e38dc8d461bf99826370f9\",\r\n  \"approverAddress\": \"0x18a4c45a96c15d62b82b341f18738125bf875fee86057d88589a183700601a1c\",\r\n  \"amountInMist\": 1000000000,\r\n  \"milestoneData\": {\r\n    \"title\": \"Milestone Name\",\r\n    \"description\": \"Description of the milestone\"\r\n  }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/add-milestone",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"add-milestone"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/approve-milestone",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "5b24eabe9578f289eae7bc83e398e8347910af1639b1a0474af55c87aadf1ad0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "pactda-api-key",
+								"value": "59129b3ae033cc6188842fa6832cc2dedad2d0a902e315116176195cba9ecf70",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"contractId\": \"0xdf5b14deadf3cfc8a38d31fdbc6e2556dd6232c41c77e67948b12f30b0e4369b\",\r\n  \"milestoneId\": 1,\r\n  \"clientApproverAddress\": \"0x18a4c45a96c15d62b82b341f18738125bf875fee86057d88589a183700601a1c\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/approve-milestone",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"approve-milestone"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/withdraw-milestone-payment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "5b24eabe9578f289eae7bc83e398e8347910af1639b1a0474af55c87aadf1ad0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "pactda-api-key",
+								"value": "59129b3ae033cc6188842fa6832cc2dedad2d0a902e315116176195cba9ecf70",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"contractId\": \"0xdf5b14deadf3cfc8a38d31fdbc6e2556dd6232c41c77e67948b12f30b0e4369b\",\r\n  \"milestoneId\": 1,\r\n  \"clientApproverAddress\": \"0x18a4c45a96c15d62b82b341f18738125bf875fee86057d88589a183700601a1c\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/approve-milestone",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"approve-milestone"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},

@@ -15,6 +15,10 @@ import { ConfigService } from '@nestjs/config';
 import { FundEscrowDto } from './dto/fund-the-escrow.dto';
 import { normalizeSuiAddress } from '@mysten/sui.js/utils';
 import { bcs } from '@mysten/sui/bcs';
+import { AddMilestone } from './dto/add-milestone.dto';
+import { completeMilestone } from './dto/complete-milestone.dto';
+import { ApproveMilestone } from './dto/approve-milestone.dto';
+import { WithdrawMilestonePayment } from './dto/withdraw-milestone-payment.dto';
 
 @Injectable()
 export class ApiService implements OnModuleInit {
@@ -100,6 +104,14 @@ export class ApiService implements OnModuleInit {
         path: '/api/fund-the-escrow',
         method: 'POST',
         description: 'Add funds to the contract escrow account.',
+        tags: null,
+        isActive: true,
+      },
+      {
+        name: 'AddMilestone',
+        path: '/api/add-milestone',
+        method: 'POST',
+        description: 'Create project milestones with specific amounts and approvers.',
         tags: null,
         isActive: true,
       },
@@ -191,6 +203,127 @@ export class ApiService implements OnModuleInit {
         tx.object(dto.contractId),
         tx.object(dto.escrowId),
         coinWithBalance({ balance: dto.totalCoinMist }),
+        tx.object(CLOCK_ID),
+      ]
+    });
+
+    const result = await this.suiClient.client.signAndExecuteTransaction({
+      signer: this.suiClient.keypair,
+      transaction: tx,
+      options: {
+        showEffects: true,
+        showObjectChanges: true,
+      },
+    });
+
+    return result;
+  }
+
+  async addMilestone(dto: AddMilestone) {
+    const PACKAGE_ID = this.configService.get<string>('PACKAGE_ID');
+    const MODULE_NAME = this.configService.get<string>('MODULE_NAME');
+    const FUNCTION_NAME = this.configService.get<string>('ADD_MILESTONE_FUNCTION_NAME');
+    const CLOCK_ID = this.configService.get<string>('CLOCK_ID') as string;
+
+    const tx = new Transaction();
+
+    tx.moveCall({
+      target: `${PACKAGE_ID}::${MODULE_NAME}::${FUNCTION_NAME}`,
+      arguments: [
+        tx.object(dto.contractId),
+        tx.pure('u64', dto.amountInMist),
+        tx.object(dto.approverAddress),
+        bcs.String.serialize(JSON.stringify(dto.milestoneData)),
+        tx.object(CLOCK_ID),
+      ]
+    });
+
+    const result = await this.suiClient.client.signAndExecuteTransaction({
+      signer: this.suiClient.keypair,
+      transaction: tx,
+      options: {
+        showEffects: true,
+        showObjectChanges: true,
+      },
+    });
+
+    return result;
+  }
+
+  async completeMilestone(dto: completeMilestone) {
+    const PACKAGE_ID = this.configService.get<string>('PACKAGE_ID');
+    const MODULE_NAME = this.configService.get<string>('MODULE_NAME');
+    const FUNCTION_NAME = this.configService.get<string>('COMPLETE_MILESTONE_FUNCTION_NAME');
+    const CLOCK_ID = this.configService.get<string>('CLOCK_ID') as string;
+
+    const tx = new Transaction();
+
+    tx.moveCall({
+      target: `${PACKAGE_ID}::${MODULE_NAME}::${FUNCTION_NAME}`,
+      arguments: [
+        tx.object(dto.contractId),
+        tx.pure('u64', dto.milestoneId),
+        tx.object(CLOCK_ID),
+      ]
+    });
+
+    const result = await this.suiClient.client.signAndExecuteTransaction({
+      signer: this.suiClient.keypair,
+      transaction: tx,
+      options: {
+        showEffects: true,
+        showObjectChanges: true,
+      },
+    });
+
+    return result;
+  }
+
+  async approveMilestone(dto: ApproveMilestone) {
+    const PACKAGE_ID = this.configService.get<string>('PACKAGE_ID');
+    const MODULE_NAME = this.configService.get<string>('MODULE_NAME');
+    const FUNCTION_NAME = this.configService.get<string>('APPROVE_MILESTONE_FUNCTION_NAME');
+    const CLOCK_ID = this.configService.get<string>('CLOCK_ID') as string;
+
+    const tx = new Transaction();
+
+    tx.moveCall({
+      target: `${PACKAGE_ID}::${MODULE_NAME}::${FUNCTION_NAME}`,
+      arguments: [
+        tx.object(dto.contractId),
+        tx.pure('u64', dto.milestoneId),
+        tx.object(dto.clientApproverAddress),
+        tx.object(CLOCK_ID),
+      ]
+    });
+
+    const result = await this.suiClient.client.signAndExecuteTransaction({
+      signer: this.suiClient.keypair,
+      transaction: tx,
+      options: {
+        showEffects: true,
+        showObjectChanges: true,
+      },
+    });
+
+    return result;
+  }
+
+  async withdrawMilestonePayment(dto: WithdrawMilestonePayment) {
+    const PACKAGE_ID = this.configService.get<string>('PACKAGE_ID');
+    const MODULE_NAME = this.configService.get<string>('MODULE_NAME');
+    const FUNCTION_NAME = this.configService.get<string>('WITHDRAW_MILESTONE_PAYMENT_FUNCTION_NAME');
+    const CLOCK_ID = this.configService.get<string>('CLOCK_ID') as string;
+
+    const tx = new Transaction();
+
+    tx.moveCall({
+      target: `${PACKAGE_ID}::${MODULE_NAME}::${FUNCTION_NAME}`,
+      arguments: [
+        tx.object(dto.contractId),
+        tx.object(dto.escrowId),
+        tx.pure('u64', dto.milestoneId),
+        tx.object(dto.recipientUserAddress),
         tx.object(CLOCK_ID),
       ]
     });
