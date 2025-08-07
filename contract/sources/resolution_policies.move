@@ -98,7 +98,7 @@ module pactda::resolution_policies {
         let resolver = create_resolver(authority_address, clock, ctx);
         transfer::transfer(resolver, authority_address);
     }
-    */
+    
 
     /// Report outcome 
     public entry fun report_outcome(

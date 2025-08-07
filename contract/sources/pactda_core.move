@@ -259,9 +259,14 @@ module pactda::pactda_core {
         let current_time = sui::clock::timestamp_ms(clock);
         
         // Validate sender is a party
-        assert!(vector::contains(&contract.parties, &sender), EUnauthorized);
+        // TODO: no need to check cause server do
+        // assert!(vector::contains(&contract.parties, &sender), EUnauthorized);
         // Allow funding in both DRAFT and ACTIVE status for multiple party funding
         assert!(contract.status == CONTRACT_STATUS_DRAFT || contract.status == CONTRACT_STATUS_ACTIVE, EInvalidStatus);
+
+        // Validate contract.creator must be the same
+        assert!(sender == contract.creator, EUnauthorized);
+
         
         // Validate escrow belongs to contract
         assert!(escrow.contract_id == object::id(contract), EEscrowNotFound);
@@ -474,7 +479,11 @@ module pactda::pactda_core {
         assert!(contract.status == CONTRACT_STATUS_ACTIVE, EInvalidStatus);
         
         // Validate sender is a party to the contract
-        assert!(vector::contains(&contract.parties, &sender), EUnauthorized);
+        // TODO: no need to check cause server send
+        //assert!(vector::contains(&contract.parties, &sender), EUnauthorized);
+        // Validate contract.creator must be the same
+        assert!(sender == contract.creator, EUnauthorized);
+
         
         // Validate contract has milestone mode enabled
         assert!(contract.milestone_mode, EInvalidMilestone);
@@ -489,7 +498,6 @@ module pactda::pactda_core {
         while (i < milestone_count) {
             let milestone = vector::borrow(milestones_ref, i);
             if (milestone.id == milestone_id) {
-                assert!(sender != milestone.approver, EUnauthorized);
                 assert!(milestone.status == MILESTONE_STATUS_PENDING, EInvalidMilestone);
                 found_index = option::some(i);
                 break
@@ -520,6 +528,7 @@ module pactda::pactda_core {
     public entry fun approve_milestone(
         contract: &mut PactDaContract,
         milestone_id: u64,
+        approver: address, 
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
@@ -532,6 +541,9 @@ module pactda::pactda_core {
         // Validate contract has milestone mode enabled
         assert!(contract.milestone_mode, EInvalidMilestone);
         assert!(option::is_some(&contract.milestones), EInvalidMilestone);
+
+        // Validate contract.creator must be the same
+        assert!(sender == contract.creator, EUnauthorized);
         
         let milestones_ref = option::borrow_mut(&mut contract.milestones);
         let milestone_count = vector::length(milestones_ref);
@@ -541,7 +553,7 @@ module pactda::pactda_core {
         while (i < milestone_count) {
             let milestone = vector::borrow(milestones_ref, i);
             if (milestone.id == milestone_id) {
-                assert!(sender == milestone.approver, EUnauthorized);
+                assert!(approver == milestone.approver, EUnauthorized);
                 assert!(milestone.status == MILESTONE_STATUS_COMPLETED, EInvalidMilestone);
                 found_index = option::some(i);
                 break
@@ -572,6 +584,7 @@ module pactda::pactda_core {
         contract: &mut PactDaContract,
         escrow: &mut Escrow,
         milestone_id: u64,
+        recipient: address,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
@@ -585,8 +598,12 @@ module pactda::pactda_core {
         assert!(escrow.contract_id == object::id(contract), EEscrowNotFound);
         assert!(contract.escrow_id == object::id(escrow), EEscrowNotFound);
         
-        // Validate sender is a party to the contract
-        assert!(vector::contains(&contract.parties, &sender), EUnauthorized);
+        // Validate sender is a party to the contrac
+        assert!(vector::contains(&contract.parties, &recipient), EUnauthorized);
+
+        // Validate contract.creator must be the same
+        assert!(sender == contract.creator, EUnauthorized);
+
         
         // Validate contract has milestone mode enabled
         assert!(contract.milestone_mode, EInvalidMilestone);
@@ -641,11 +658,12 @@ module pactda::pactda_core {
             escrow_id,
             milestone_id,
             withdrawn_by: sender,
+            recipient: recipient,
             amount: withdrawal_amount,
             timestamp: current_time,
         });
         
-        transfer::public_transfer(payment, sender);
+        transfer::public_transfer(payment, recipient);
     }
 
     /// Change milestone approver
@@ -765,6 +783,7 @@ module pactda::pactda_core {
         escrow_id: ID,
         milestone_id: u64,
         withdrawn_by: address,
+        recipient: address,
         amount: u64,
         timestamp: u64,
     }
